@@ -9,6 +9,7 @@
 
   <!-- Persona 3 Reload 100% Video Replica Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mobile.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body data-screen="home">
@@ -72,6 +73,7 @@
       <div class="hud-tag">PORTFOLIO // RADEN ARYA</div>
       <div class="hud-tag alt">PENS · ELECTRONICS & INFORMATICS</div>
     </header>
+    <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">☰</button>
 
     <main id="stage">
 
@@ -87,7 +89,7 @@
         <div id="tagline">
           Final-year Informatics & Computer Engineering student at PENS focusing on autonomous AI agents, full-stack web architecture, client-side media engines, and backend automation daemons. Exploring cutting-edge interfaces, resilient self-hosted servers, and distributed web operations. Larper Persona, credit to <a href="https://github.com/numal400" target="_blank" rel="noopener">@numal400</a> in github.
         </div>
-        <nav id="menu" aria-label="Sections">
+        <nav id="menu" class="main-menu" aria-label="Sections">
           <button class="menu-item sel" data-target="projects">
             <span class="ransom" data-ransom="PROJECTS"></span><span class="cursor-mark">◀</span>
           </button>
@@ -218,5 +220,6 @@
   <script src="js/model.js"></script>
   <script src="js/view.js"></script>
   <script src="js/controller.js"></script>
+  <script src="js/mobile-nav.js"></script>
 </body>
 </html>

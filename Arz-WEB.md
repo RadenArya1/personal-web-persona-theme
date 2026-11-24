@@ -301,6 +301,14 @@ Dashboard utama mengusung tema **Arcane Tome / Cyber-Grimoire** bergaya buku sih
 - **Kotak Sesi & Jam Digital**: Bar horizontal ramping berisi jam digital terpusat berlatar kaca transparan `rgba(255, 255, 255, 0.3)` dengan tanggal di bawahnya, serta tombol **"TUTUP BUKU"** merah-emas berefek shimmer.
 - **Navigasi Layar Smartphone (Mobile FAB)**: Tombol melayang elegan di sudut kanan bawah untuk berpindah mulus antara Lembaran Kiri (Katalog Proyek) dan Lembaran Kanan (Konsol & Status) dengan background anime Grimoire tunggal (`book_page_left.png` vs `book_page_right.png`).
 
+### 6. Arsitektur Responsif Android-Fit (`css/mobile.css` & `js/mobile-nav.js`)
+- **Reflow Vertikal Layar Penuh (100dvh)**: Mengubah sistem fixed screen desktop menjadi layout satu kolom vertikal yang dapat di-scroll (`overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 100dvh;`).
+- **Navigasi Drawer Persona 3 Mobile**: Tombol hamburger (`#mobileMenuBtn`, 44px × 44px) di pojok kanan atas yang mengaktifkan drawer navigasi atas dengan latar gelap ber-blur kaca, dukungan penutupan dengan tombol `Escape`, klik di luar drawer, serta reparenting DOM otomatis (`#menu` dipindah ke `#shell` saat mobile agar dapat diakses dari sub-screen manapun).
+- **Target Sentuh Standar Android (≥ 44px–48px)**: Seluruh tombol aksi (`.card .meta .go`, `.cv-btn`, `.form-send`, `.back-hint`, dan `#audio-toggle`) mengadopsi ukuran target sentuh minimal 44px–48px.
+- **Form Kontak Anti-Zoom & Ergonomis**: Input teks dan email berukuran font 16px (mencegah auto-zoom Safari iOS), tinggi minimum 48px, textarea minimum 120px, dan tombol transmisi berukuran penuh selebar kontainer.
+- **Sinkronisasi Skala Layar Adaptif (`syncZoom`)**: Mengaktifkan skala natural 1:1 (`data-zoom="1"`) di ponsel (< 768px) dan secara otomatis memulihkan skala zoom-lock 80% (0.8) pada layar desktop (≥ 769px).
+- **Proteksi Isolasi Desktop (≥ 769px)**: Seluruh aturan mobile terisolasi dalam media query, menjamin tampilan desktop, estetika video latar, serta navigasi keyboard (↑, ↓, Enter, Esc) tetap beroperasi 100% utuh tanpa regresi.
+
 ---
 
 ## BAGIAN III: SPESIFIKASI ETHOL ACADEMIC NOTIFIER (`ethol-notifier/`)

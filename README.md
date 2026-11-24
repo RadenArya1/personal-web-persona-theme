@@ -48,6 +48,7 @@ flowchart TD
 *Portal Pusat Kendali, Portofolio & Peluncur Layanan Mandiri*
 - **Fitur Utama:**
   - **Persona 3 Reload Aesthetic & Video Replica:** Antarmuka visual interaktif bertema Persona dengan navigasi menu video dinamis (Home, About, Projects, Skills, Contact) dan zoom-lock 80%.
+  - **Android-Fit Responsive Engine (`css/mobile.css` & `js/mobile-nav.js`):** Transformasi dinamis layout ponsel (360px–430px) dengan sistem 1 kolom vertikal scrollable penuh, drawer menu mobile Persona 3 (hamburger), target sentuh ≥ 44px–48px (Material Design 3), tipografi 16px anti-auto-zoom iOS, sinkronisasi skala zoom 1:1 mobile & zoom-lock 80% desktop.
   - **Dynamic Project Catalog:** Katalog ubin proyek interaktif dengan pelacakan status operasional dua fase (*Aktif* & *Perbaikan*).
   - **Live Service Health Monitor:** Pelacak ketersediaan dan latensi node layanan secara real-time.
   - **Interactive Widget Suite:** Jam astronomis, audio ambience switcher, dan quick console.
