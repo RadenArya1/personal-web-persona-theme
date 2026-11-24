@@ -1,310 +1,221 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0a120c" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Grimoire Dashboard - Arz</title>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  
-  <!-- Fonts (Cinzel, Plus Jakarta Sans, JetBrains Mono Tabular, MedievalSharp) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=MedievalSharp&display=swap" rel="stylesheet" />
-  
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  
-  <!-- Shared Styles -->
-  <link rel="stylesheet" href="src/shared/shared.css?v=20260913_transparan" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>RADEN ARYA · PORTFOLIO // ARZ-WEB</title>
+  <meta name="description" content="Personal Operations Control Center and Telemetry Hub in Persona 3 Reload aesthetic with locked 60% zoom.">
 
-  <!-- Feature Styles -->
-  <link rel="stylesheet" href="src/sampul/sampul.css?v=20260913_transparan" />
-  <link rel="stylesheet" href="src/tutup-buku/tutup-buku.css?v=20260913_transparan" />
-  <link rel="stylesheet" href="src/status/status.css?v=20260913_transparan" />
-  <link rel="stylesheet" href="src/proyek/proyek.css?v=20260930_popover_fix" />
-  <link rel="stylesheet" href="src/konsol/konsol.css?v=20260913_transparan" />
+  <!-- Persona 3 Reload 100% Video Replica Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body>
-  <!-- Canvas untuk efek partikel sihir & kunang-kunang di atas rumput -->
-  <canvas id="magicParticles"></canvas>
+<body data-screen="home">
 
-  <!-- ================= COVER VIEW (TAMPILAN UTAMA BUKU) ================= -->
-  <main id="coverView" class="cover-view active">
-    <!-- Ambient Sunlight Filter -->
-    <div class="ambient-sunlight"></div>
+  <!-- Background Art & Video Layer System -->
+  <div id="bg" aria-hidden="true">
+    <div class="bg-layer" id="bg-stripes"></div>
+    <svg class="bg-star" style="left:6%;top:8%;width:26vmax;height:26vmax" viewBox="0 0 100 100">
+      <polygon points="50,0 60,35 98,35 68,57 78,94 50,72 22,94 32,57 2,35 40,35" fill="#000"/>
+    </svg>
+    <svg class="bg-star s2" style="right:4%;bottom:6%;width:34vmax;height:34vmax" viewBox="0 0 100 100">
+      <polygon points="50,0 60,35 98,35 68,57 78,94 50,72 22,94 32,57 2,35 40,35" fill="#fff"/>
+    </svg>
 
-    <div class="book-stage">
-      <div class="book-wrapper">
-        <!-- Gambar Buku Sesuai Yang Diberikan -->
-        <img src="src/sampul/book_cover.png" alt="Grimoire Arz" class="book-img" id="bookImage" />
+    <!-- Per-Screen Authentic Persona 3 Reload Background Videos -->
+    <video id="video-home" class="menu-art-video" autoplay muted loop playsinline preload="auto">
+      <source src="assets/video/home-background.mp4" type="video/mp4">
+    </video>
+    <video id="video-projects" class="menu-art-video" muted loop playsinline preload="metadata">
+      <source src="assets/video/projects-background.mp4" type="video/mp4">
+    </video>
+    <video id="video-skills" class="menu-art-video" muted loop playsinline preload="metadata">
+      <source src="assets/video/skills-background.mp4" type="video/mp4">
+    </video>
+    <video id="video-about" class="menu-art-video" muted loop playsinline preload="metadata">
+      <source src="assets/video/about-background.mp4" type="video/mp4">
+    </video>
+    <video id="video-contact" class="menu-art-video" muted loop playsinline preload="metadata">
+      <source src="assets/video/contact-background.mp4" type="video/mp4">
+    </video>
 
-        <!-- Area Konten Tepat Di Tengah Sampul Buku -->
-        <div class="book-overlay-center">
-          <!-- Sapaan & Username Arz -->
-          <div class="user-greeting-box">
-            <span class="greeting-sub">PORTAL PRIBADI</span>
-            <h1 class="user-display-name">
-              <span class="greeting-prefix">Halo,</span>
-              <span class="name-highlight">Arz</span>
-            </h1>
-          </div>
-
-          <!-- Waktu & Jam Hari Ini -->
-          <div class="time-widget-box">
-            <div class="clock-display" id="coverClock">00:00:00</div>
-            <div class="date-display" id="coverDate">Memuat tanggal...</div>
-            <div class="day-phase" id="coverDayPhase">
-              <i class="fa-solid fa-sun icon-phase"></i> <span id="phaseText">Pagi Hari</span>
-            </div>
-          </div>
-
-          <!-- Tombol Masuk Di Tengah Buku -->
-          <button id="btnEnter" class="btn-enter-grimoire" title="Buka Grimoire & Masuk ke Dashboard">
-            <span class="btn-shimmer"></span>
-            <span class="btn-inner">
-              <i class="fa-solid fa-book-open btn-icon-left"></i>
-              <span class="btn-label">MASUK</span>
-              <i class="fa-solid fa-arrow-right btn-icon-right"></i>
-            </span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- ================= DASHBOARD VIEW (HALAMAN DALAM GRIMOIRE - BUKU TERBUKA) ================= -->
-  <div id="dashboardView" class="dashboard-view hidden" data-mobile-page="left">
-    <!-- Open Book Stage (Full Screen UI) -->
-    <div class="open-book-stage">
-      <div class="open-book-wrapper">
-        <img src="src/shared/book_open.png" alt="Grimoire Terbuka" class="open-book-img" id="openBookImage" />
-
-        <!-- Mobile Background Images (Single Page Left & Right) -->
-        <img src="src/shared/book_page_left.png" alt="Grimoire Halaman Kiri" class="mobile-page-bg mobile-bg-left" id="mobileBgLeft" />
-        <img src="src/shared/book_page_right.png" alt="Grimoire Halaman Kanan" class="mobile-page-bg mobile-bg-right" id="mobileBgRight" />
-
-        <!-- ================= KOTAK KIRI: KATALOG SEMUA PROYEK WEB ARZ ================= -->
-        <section class="book-panel page-left" id="panelLeft">
-          <div class="page-scroll-content">
-            <!-- Header Halaman Kiri -->
-            <div class="page-header">
-              <h2 class="page-title">Katalog Proyek Web Arz</h2>
-            </div>
-
-            <!-- Toolbar Pencarian & Kategori Proyek -->
-            <div class="project-toolbar">
-              <div class="search-input-wrap">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="projectSearchInput" class="project-search-input" placeholder="Cari nama proyek, stack teknologi..." />
-              </div>
-              <div class="project-category-tabs" id="projectCategoryTabs">
-                <button class="proj-cat-tab active" data-category="ALL">Semua</button>
-                <button class="proj-cat-tab" data-category="active"><i class="fa-solid fa-circle" style="font-size: 0.4rem; color: #16a34a;"></i> Aktif</button>
-                <button class="proj-cat-tab" data-category="wip"><i class="fa-solid fa-circle" style="font-size: 0.4rem; color: #d97706;"></i> Perbaikan</button>
-              </div>
-            </div>
-
-            <!-- Kontainer Daftar Kartu Proyek Web -->
-            <div class="projects-container" id="projectsContainer">
-              <!-- Diisi secara dinamis oleh src/proyek/proyek.js -->
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= KOTAK KANAN ATAS: KONSOL NOTIFIKASI & WEBHOOK REAL-TIME ================= -->
-        <section class="book-panel page-right-top" id="panelRightTop">
-          <div class="console-panel-wrap">
-            <!-- Header Konsol & Indikator Status -->
-            <div class="console-header">
-              <div class="console-title-group">
-                <h3 class="console-title"><i class="fa-solid fa-terminal"></i> Konsol Notifikasi Web</h3>
-                <div class="console-daemon-status">
-                  <span class="pulse-dot"></span>
-                  <span>Daemon Listening Aktif</span>
-                </div>
-              </div>
-
-              <div class="console-quick-actions">
-                <button id="btnClearConsole" class="btn-console-act" title="Bersihkan log terminal">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Filter Level & Subtext -->
-            <div class="console-toolbar">
-              <div class="console-filter-tabs">
-                <button class="c-tab active" data-level="ALL">Semua</button>
-                <button class="c-tab" data-level="INFO">Info</button>
-                <button class="c-tab" data-level="SUCCESS">Sukses</button>
-                <button class="c-tab" data-level="WARN">Peringatan</button>
-                <button class="c-tab" data-level="EVENT">Event</button>
-              </div>
-            </div>
-
-            <!-- Layar Terminal Log -->
-            <div class="console-screen" id="consoleScreen">
-              <!-- Diisi secara dinamis oleh src/konsol/konsol.js -->
-            </div>
-
-            <!-- Input Bar Uji Cepat Notifikasi & Perintah CLI -->
-            <div class="console-input-bar">
-              <span class="input-prompt">&gt;</span>
-              <input type="text" id="consoleTextInput" class="console-text-input" placeholder="Ketik perintah (misal: 'saldo') atau pesan uji lalu tekan Enter..." />
-              <button id="btnSendLog" class="btn-send-log" title="Kirim ke Konsol">
-                <i class="fa-solid fa-paper-plane"></i>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- ================= KOTAK KANAN BAWAH: UI TUTUP BUKU & SYSTEM STATUS & HEALTH METRICS WIDGET ================= -->
-        <section class="book-panel page-right-bottom" id="panelRightBottom">
-          <!-- Sisi Kiri: Kartu Terpisah Tutup Buku & Jam Digital -->
-          <div class="tutup-buku-card" id="tutupBukuCard">
-            <div class="tutup-buku-tag">
-              <i class="fa-solid fa-book"></i> SESI BUKU
-            </div>
-
-            <div class="big-clock-box">
-              <div class="big-clock-time-wrap">
-                <i class="fa-regular fa-clock big-clock-icon"></i>
-                <span class="big-clock-time" id="navClock">00:00:00</span>
-              </div>
-              <span class="big-clock-date" id="navDate">Memuat tanggal...</span>
-            </div>
-
-            <button id="btnCloseBook" class="btn-close-book-x" title="Tutup Grimoire (Kembali ke Sampul Depan)">
-              <div class="close-x-circle">
-                <i class="fa-solid fa-xmark"></i>
-              </div>
-              <span class="close-x-text">TUTUP BUKU</span>
-            </button>
-          </div>
-
-          <!-- Pemisah Ornamen Vertikal Antar Modul -->
-          <div class="panel-v-divider" aria-hidden="true">
-            <div class="divider-line"></div>
-            <div class="divider-crest">✦</div>
-            <div class="divider-line"></div>
-          </div>
-
-          <!-- Sisi Kanan: System Status & Health Metrics Widget -->
-          <div class="system-status-widget" id="systemStatusWidget">
-            <!-- Header Status -->
-            <div class="status-widget-header">
-              <div class="status-header-title">
-                <i class="fa-solid fa-heart-pulse status-pulse-icon"></i>
-                <span class="desktop-title">STATUS &amp; METRIK SISTEM</span>
-                <span class="mobile-title">METRIK SISTEM</span>
-              </div>
-              <div class="status-header-actions">
-                <div class="status-badge">
-                  <span class="pulse-emerald"></span>
-                  <span id="statusStateLabel">SEMUA NORMAL</span>
-                </div>
-                <button id="btnPingStatus" class="btn-ping-status" title="Jalankan Diagnostik &amp; Ping Telemetri">
-                  <i class="fa-solid fa-arrows-rotate"></i> Ping
-                </button>
-              </div>
-            </div>
-
-            <!-- Grid Metrik Telemetri 2x2 -->
-            <div class="metrics-grid">
-              <!-- Metrik 1: CPU / Core Engine -->
-              <div class="metric-tile">
-                <div class="m-row-top">
-                  <span class="m-name"><i class="fa-solid fa-microchip"></i> Core Engine</span>
-                  <span class="m-val" id="metricCpuVal">24%</span>
-                </div>
-                <div class="metric-bar-track">
-                  <div class="metric-bar-fill" id="barCpuFill" style="width: 24%"></div>
-                </div>
-                <div class="m-row-bottom">
-                  <span>12 Cores Aktif</span>
-                  <span style="color:#15803d;">Stabil</span>
-                </div>
-              </div>
-
-              <!-- Metrik 2: Aether RAM -->
-              <div class="metric-tile">
-                <div class="m-row-top">
-                  <span class="m-name"><i class="fa-solid fa-memory"></i> Memori RAM</span>
-                  <span class="m-val" id="metricRamVal">4.2 GB</span>
-                </div>
-                <div class="metric-bar-track">
-                  <div class="metric-bar-fill ram" id="barRamFill" style="width: 26%"></div>
-                </div>
-                <div class="m-row-bottom">
-                  <span>Heap 4.2 / 16 GB</span>
-                  <span style="color:#0284c7;">Optimal</span>
-                </div>
-              </div>
-
-              <!-- Metrik 3: Latensi Jaringan -->
-              <div class="metric-tile">
-                <div class="m-row-top">
-                  <span class="m-name"><i class="fa-solid fa-satellite-dish"></i> Latensi Jaringan</span>
-                  <span class="m-val" id="metricPingVal">22 ms</span>
-                </div>
-                <div class="m-row-bottom" style="margin-top: 2px;">
-                  <span class="signal-indicator"><i class="fa-solid fa-wifi"></i> Ultra Stabil</span>
-                  <span>0% Loss</span>
-                </div>
-              </div>
-
-              <!-- Metrik 4: Daemon & Layanan -->
-              <div class="metric-tile">
-                <div class="m-row-top">
-                  <span class="m-name"><i class="fa-solid fa-server"></i> Modul Daemon</span>
-                  <span class="m-val" id="metricServicesVal">4/4 Aktif</span>
-                </div>
-                <div class="service-pills-wrap">
-                  <span class="service-pill active" title="Webhook Daemon">Webhook</span>
-                  <span class="service-pill active" title="Node.js API">API</span>
-                  <span class="service-pill active" title="CasaOS Host">CasaOS</span>
-                  <span class="service-pill active" title="Auth Gateway">Auth</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer Ticker Telemetri -->
-            <div class="status-footer-bar">
-              <i class="fa-solid fa-shield-halved"></i>
-              <span id="statusTickerText">Integritas Telemetri Terverifikasi • 0 Kesalahan Kritis</span>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-
-    <!-- Tombol Melayang Navigasi Halaman HP (Mobile Floating Page Switcher) -->
-    <button id="btnMobilePageSwitch" class="mobile-page-fab" aria-label="Beralih Halaman Grimoire">
-      <span class="fab-icon-wrap" id="fabIconWrap">
-        <i class="fa-solid fa-terminal" id="fabIcon"></i>
-      </span>
-      <span class="fab-label" id="fabLabel">Konsol &amp; Status</span>
-      <i class="fa-solid fa-arrow-right fab-arrow" id="fabArrow"></i>
-    </button>
+    <div class="bg-layer" id="bg-halftone"></div>
+    <div class="bg-layer" id="bg-vignette"></div>
   </div>
 
-  <!-- Shared Scripts -->
-  <script src="src/shared/utils.js?v=20260913_7"></script>
-  <script src="src/shared/audio.js?v=20260913_7"></script>
-  <script src="src/shared/particles.js?v=20260913_7"></script>
+  <div id="slash" aria-hidden="true"></div>
 
-  <!-- Feature Scripts -->
-  <script src="src/sampul/sampul.js?v=20260913_7"></script>
-  <script src="src/tutup-buku/tutup-buku.js?v=20260913_7"></script>
-  <script src="src/status/status.js?v=20260913_7"></script>
-  <script src="src/proyek/proyek.js?v=20260930_popover_fix"></script>
-  <script src="src/konsol/konsol.js?v=20260930_presensi_sukses_v5"></script>
+  <!-- Hero Art Character Overlay -->
+  <img id="hero-art" src="assets/hero.png" alt="" onerror="this.remove()">
+
+  <!-- Screen Transition 3-Pane Diagonal Wipe -->
+  <div id="wipe" aria-hidden="true">
+    <div class="pane p3"></div>
+    <div class="pane p2"></div>
+    <div class="pane p1"></div>
+    <div class="flash"></div>
+  </div>
+
+  <!-- Custom Animated Cursor -->
+  <div id="cursor" aria-hidden="true"></div>
+
+  <!-- Authentic Web Audio SFX & Video Engine -->
+  <audio id="sfx-select" src="assets/sfx/select.mp3" preload="auto"></audio>
+  <button id="audio-toggle" aria-label="Turn audio on">🔇</button>
+
+
+
+  <!-- Shell & HUD Structure -->
+  <div id="shell">
+    <header id="hud-top">
+      <div class="hud-tag">PORTFOLIO // RADEN ARYA</div>
+      <div class="hud-tag alt">PENS · ELECTRONICS & INFORMATICS</div>
+    </header>
+
+    <main id="stage">
+
+      <!-- ===================================================================
+           SCREEN 1: HOME
+           =================================================================== -->
+      <section class="screen active" id="screen-home" aria-label="Main menu">
+        <div id="intro-eyebrow">TAKE A LOOK AT MY WORK</div>
+        <h1 id="big-name">
+          <span class="ransom" data-ransom="RADEN"></span>
+          <span class="ransom" data-ransom="ARYA"></span>
+        </h1>
+        <div id="tagline">
+          Final-year Informatics & Computer Engineering student at PENS focusing on autonomous AI agents, full-stack web architecture, client-side media engines, and backend automation daemons. Exploring cutting-edge interfaces, resilient self-hosted servers, and distributed web operations. Larper Persona, credit to <a href="https://github.com/numal400" target="_blank" rel="noopener">@numal400</a> in github.
+        </div>
+        <nav id="menu" aria-label="Sections">
+          <button class="menu-item sel" data-target="projects">
+            <span class="ransom" data-ransom="PROJECTS"></span><span class="cursor-mark">◀</span>
+          </button>
+          <button class="menu-item" data-target="skills">
+            <span class="ransom" data-ransom="SKILLS"></span><span class="cursor-mark">◀</span>
+          </button>
+          <button class="menu-item" data-target="about">
+            <span class="ransom" data-ransom="ABOUT"></span><span class="cursor-mark">◀</span>
+          </button>
+          <button class="menu-item" data-target="contact">
+            <span class="ransom" data-ransom="CONTACT"></span><span class="cursor-mark">◀</span>
+          </button>
+        </nav>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 2: PROJECTS
+           =================================================================== -->
+      <section class="screen sub" id="screen-projects" aria-label="Projects">
+        <div class="screen-head"><span class="ransom" data-ransom="PROJECTS"></span></div>
+        <button class="back-hint" data-back>ESC · Back</button>
+        <div class="grid-label"><span class="bar"></span>FEATURED ECOSYSTEM PROJECTS</div>
+        <div id="feat-grid" class="grid"></div>
+        <div class="grid-label"><span class="bar"></span>ALL REPOSITORIES & MODULES</div>
+        <div id="repo-status">SYNCING WITH GITHUB…</div>
+        <div id="repo-grid" class="grid"></div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 3: SKILLS
+           =================================================================== -->
+      <section class="screen sub" id="screen-skills" aria-label="Skills">
+        <div class="screen-head"><span class="ransom" data-ransom="SKILLS"></span></div>
+        <button class="back-hint" data-back>ESC · Back</button>
+        <div id="skills-body"></div>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 4: ABOUT
+           =================================================================== -->
+      <section class="screen sub align-right" id="screen-about" aria-label="About">
+        <div class="screen-head"><span class="ransom" data-ransom="ABOUT"></span></div>
+        <button class="back-hint" data-back>ESC · Back</button>
+
+        <div class="paper">
+          <p class="quote">
+            I am a motivated <strong class="about-highlight">Informatics & Computer Engineering student</strong> with a strong commitment to <strong class="about-highlight">autonomous AI agents, web architectures, server orchestration,</strong> and practical engineering.
+          </p>
+          <br>
+          <p>
+            Currently pursuing my degree at <strong>Politeknik Elektronika Negeri Surabaya (PENS)</strong>. My work centers on creating deterministic automation pipelines, real-time client telemetry, zero-dependency audio synthesizers, and resilient self-hosted platforms on CasaOS and Nginx.
+          </p>
+          <br>
+          <p>
+            When building applications, I prioritize <span class="stamp">SECURITY</span>, responsiveness, and polished interactive design systems inspired by Japanese arcade and RPG user interfaces.
+          </p>
+
+          <blockquote class="about-quote">
+            "Turning complex engineering challenges into autonomous, elegant, and rock-solid systems."
+          </blockquote>
+        </div>
+
+        <a href="assets/cv/Numal_Das_Resume.pdf" class="cv-btn" target="_blank" download="Raden_Arya_Resume.pdf">
+          <span>DOWNLOAD RESUME / CV</span>
+        </a>
+      </section>
+
+      <!-- ===================================================================
+           SCREEN 5: CONTACT
+           =================================================================== -->
+      <section class="screen sub align-right" id="screen-contact" aria-label="Contact">
+        <div class="screen-head"><span class="ransom" data-ransom="CONTACT"></span></div>
+        <button class="back-hint" data-back>ESC · Back</button>
+
+        <div class="paper" style="max-width: 680px;">
+          <form id="contact-form">
+            <div class="form-head">SEND A DIRECT TRANSMISSION</div>
+            <input type="text" name="_honey" style="display:none">
+            <label class="field">
+              <span>YOUR NAME // NAMA</span>
+              <input type="text" name="name" required placeholder="John Doe">
+            </label>
+            <label class="field">
+              <span>YOUR EMAIL // ALAMAT EMAIL</span>
+              <input type="email" name="email" required placeholder="john@example.com">
+            </label>
+            <label class="field">
+              <span>MESSAGE // PESAN</span>
+              <textarea name="message" required placeholder="Type your inquiry or feedback here..."></textarea>
+            </label>
+            <div class="form-foot">
+              <button type="submit" class="cv-btn form-send"><span>TRANSMIT →</span></button>
+              <div id="form-status"></div>
+            </div>
+          </form>
+        </div>
+
+        <div class="contact-list">
+          <a class="contact-chip" href="https://github.com/RadenArya1" target="_blank" rel="noopener">
+            <span><i class="fa-brands fa-github"></i> GITHUB // RADENARYA1</span>
+          </a>
+          <a class="contact-chip" href="mailto:raidenarya070906@gmail.com">
+            <span><i class="fa-solid fa-envelope"></i> EMAIL // DIRECT</span>
+          </a>
+          <a class="contact-chip casaos-chip" href="http://casaos.raidenarya.my.id" target="_blank" rel="noopener">
+            <span><i class="fa-solid fa-server"></i> CASAOS // HOME SERVER</span>
+          </a>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- HUD Bottom Legend & Clock -->
+    <footer id="hud-bottom">
+      <div>
+        <span class="key">↑↓</span><span style="margin-right:12px;">SELECT</span>
+        <span class="key">ENTER</span><span style="margin-right:12px;">CONFIRM</span>
+        <span class="key">ESC</span><span>BACK</span>
+      </div>
+      <div style="margin-left:auto;" id="clock">00:00:00 · WIB</div>
+    </footer>
+  </div>
+
+  <!-- Universal Zoom 60% Lock Engine -->
+  <script src="src/shared/zoom-lock.js"></script>
+
+  <!-- Persona MVC Application Scripts -->
+  <script src="js/model.js"></script>
+  <script src="js/view.js"></script>
+  <script src="js/controller.js"></script>
 </body>
 </html>
-
-

@@ -1,37 +1,42 @@
 /* ============================================================
    ETHOL ABSEN INSPECTOR — VISUAL STEP-BY-STEP VIEWER
-   Design System: Master Frontend Studio × Mobile Design Ergonomics
+   Persona 3 Reload Velvet Blue & Dark Void Design System
    ============================================================ */
 
+/* Custom Red Persona Cursor */
+html, body, button, a, input, textarea, select {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M4 2 L22 18 L14 18 L18 28 L14 30 L10 20 L4 26 Z' fill='%23ff1744' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='miter'/%3E%3C/svg%3E"), auto !important;
+}
+
 :root {
-  --bg-core: #060b11;
-  --bg-deep: #03060a;
-  --bg-card: rgba(13, 23, 36, 0.75);
-  --bg-card-hover: rgba(20, 35, 54, 0.85);
-  --bg-elevated: rgba(26, 45, 68, 0.9);
+  --bg-core: #000814;
+  --bg-deep: #00050d;
+  --bg-card: rgba(0, 18, 46, 0.92);
+  --bg-card-hover: rgba(0, 28, 72, 0.95);
+  --bg-elevated: rgba(0, 36, 92, 0.95);
   
-  --border-subtle: rgba(56, 189, 248, 0.12);
-  --border-focus: rgba(56, 189, 248, 0.4);
-  --border-active: #38bdf8;
+  --border-subtle: rgba(0, 85, 255, 0.35);
+  --border-focus: #00e5ff;
+  --border-active: #00e5ff;
 
-  --cyan-main: #38bdf8;
-  --cyan-bright: #0ea5e9;
-  --cyan-glow: rgba(56, 189, 248, 0.25);
-  --emerald: #10b981;
-  --emerald-glow: rgba(16, 185, 129, 0.25);
+  --cyan-main: #00e5ff;
+  --cyan-bright: #7df9ff;
+  --cyan-glow: rgba(0, 229, 255, 0.35);
+  --emerald: #00e5ff;
+  --emerald-glow: rgba(0, 229, 255, 0.25);
   --amber: #f59e0b;
-  --rose: #f43f5e;
+  --rose: #ff1744;
 
-  --text-main: #f8fafc;
-  --text-muted: #8fa0b5;
-  --text-dim: #54657a;
+  --text-main: #ffffff;
+  --text-muted: #cbd5e1;
+  --text-dim: #94a3b8;
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
   --radius-full: 9999px;
 
   --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
@@ -52,14 +57,26 @@
 }
 
 html {
+  zoom: 0.8 !important;
+  -moz-transform: scale(0.8);
+  -moz-transform-origin: 0 0;
+  touch-action: pan-x pan-y;
   font-size: 15px;
   color-scheme: dark;
   scroll-behavior: smooth;
 }
 
 body {
+  zoom: 0.8 !important;
+  touch-action: pan-x pan-y;
   font-family: var(--font-sans);
   background-color: var(--bg-core);
+  background-image: 
+    radial-gradient(rgba(0, 229, 255, 0.08) 1.5px, transparent 1.5px),
+    repeating-linear-gradient(-68deg, transparent, transparent 36px, rgba(0, 85, 255, 0.08) 36px, rgba(0, 85, 255, 0.08) 38px),
+    linear-gradient(180deg, #000814 0%, #00122e 100%);
+  background-size: 26px 26px, auto, auto;
+  background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
   min-height: 100dvh;
@@ -67,6 +84,28 @@ body {
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Cut-Corners & Persona 3 Reload Card Overrides ─────────── */
+.app-header,
+.viewer-card,
+.step-card,
+.timeline-container,
+.card-surface,
+.obs-step-row {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  border: 1px solid rgba(0, 85, 255, 0.4) !important;
+  box-shadow: 4px 6px 0 rgba(0, 0, 0, 0.85);
+}
+
+.btn-nav-back,
+.btn-step,
+.btn-action {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  font-weight: 800;
+  min-height: 48px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 /* ─── AMBIENT BACKGROUND ─────────────────────────────────── */
@@ -103,7 +142,6 @@ body {
   padding: 16px 22px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
   backdrop-filter: blur(20px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }

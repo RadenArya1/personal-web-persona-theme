@@ -19,6 +19,7 @@ const state = {
   diagnosticsOpen:  false,
   lastRunResult:    null,
   lastRunError:     null,
+  selectedIndex:    0,
   _lastZeroPoll:    0
 };
 
@@ -31,12 +32,13 @@ const GatewayManager = {
   getCandidates() {
     const isLocal = window.location.hostname === '127.0.0.1' || 
                     window.location.hostname === 'localhost' || 
-                    window.location.port === '8080' || 
                     window.location.protocol === 'file:';
+    const localPort = window.location.port || '8080';
     if (isLocal) {
       return [
-        'http://127.0.0.1:8080/api/absen',
+        `http://127.0.0.1:${localPort}/api/absen`,
         '/api/absen',
+        'http://127.0.0.1:8080/api/absen',
         '/ethol-notifier/api.php?path='
       ];
     }
@@ -158,8 +160,23 @@ function escapeHtml(str) {
 
 // ─── CLOCK ──────────────────────────────────────────────────
 function updateClock() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  const dotTime = `${hh}.${mm}.${ss}`;
+
   const el = $('topbarClock');
-  if (el) el.textContent = new Date().toLocaleTimeString('id-ID', { hour12: false });
+  if (el) el.textContent = dotTime;
+
+  const bottomEl = $('bottomHudClock');
+  if (bottomEl) bottomEl.textContent = `${hh}.${mm} WIB`;
+
+  const tsSub = $('timestampSubVal');
+  if (tsSub) tsSub.textContent = dotTime;
+
+  const lastCheck = $('consoleLastCheck');
+  if (lastCheck) lastCheck.textContent = `Terakhir dicek: ${dotTime} WIB.`;
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -337,6 +354,15 @@ function renderTimelineCard(cleanMsg, ts, screenshotUrl, persist = true) {
   card.dataset.ts = itemTs;
   card.dataset.sig = sig;
 
+  // Ekstrak nama mata kuliah saja yang rapi untuk loop mode
+  let courseName = cleanMsg;
+  const matchCourse = cleanMsg.match(/(?:—|–|-)\s*([^|—–\n]+)/);
+  if (matchCourse && matchCourse[1]) {
+    courseName = matchCourse[1].trim();
+  } else {
+    courseName = cleanMsg.replace(/^\[.*?\]\s*/g, '').replace(/^[✓✔]\s*/g, '').replace(/^Presensi Berhasil (?:Tercatat|Diproses)\s*(?:—|–|-)?\s*/i, '').trim();
+  }
+
   card.innerHTML = `
     <div class="timeline-rail">
       <div class="timeline-node">
@@ -353,6 +379,7 @@ function renderTimelineCard(cleanMsg, ts, screenshotUrl, persist = true) {
         </span>
       </div>
       <h3 class="timeline-title">${escapeHtml(cleanMsg)}</h3>
+      <h3 class="timeline-title-compact">${escapeHtml(courseName)}</h3>
       <div class="timeline-details">Presensi berhasil dikonfirmasi ke portal Ethol PENS.</div>
       
       ${finalSS ? `
@@ -389,9 +416,11 @@ function updateMetrics() {
 
   const statPresensi = $('statPresensiCount');
   if (statPresensi) statPresensi.textContent = count;
+  const statPresensiLoop = $('statPresensiCountLoop');
+  if (statPresensiLoop) statPresensiLoop.textContent = `${count} sesi`;
 
   const countBadge = $('timelineCountBadge');
-  if (countBadge) countBadge.textContent = `${count} Berhasil`;
+  if (countBadge) countBadge.textContent = count;
 
   const emptyView = $('timelineEmpty');
   if (emptyView) {
@@ -507,6 +536,26 @@ function restoreFromStorage() {
 }
 
 // ─── RADIAL COUNTDOWN & STATUS HUB ──────────────────────────
+function renderRansomText(el, text) {
+  if (!el) return;
+  const str = text !== undefined ? String(text) : (el.getAttribute('data-ransom') || el.textContent);
+  el.innerHTML = '';
+  [...str].forEach((c, i) => {
+    if (c === ' ') {
+      el.appendChild(document.createTextNode(' '));
+      return;
+    }
+    const span = document.createElement('span');
+    span.className = 'ch';
+    span.textContent = c;
+    const rot = ((i * 7 + str.charCodeAt(i)) % 9) - 4;
+    span.style.setProperty('--rot', rot + 'deg');
+    if (i % 4 === 1) span.classList.add('boxw');
+    else if (i % 6 === 3) span.classList.add('accent');
+    el.appendChild(span);
+  });
+}
+
 function setHubState(mode, headline, desc, progressRatio = 1) {
   const ring = $('radialProgressRing');
   const stateIcon = $('hubStateIcon');
@@ -514,6 +563,20 @@ function setHubState(mode, headline, desc, progressRatio = 1) {
   const hubHeadline = $('hubHeadline');
   const hubDesc = $('hubDesc');
   const eyebrow = $('hubEyebrow');
+  const countdownBox = $('hubCountdownBox');
+  const countdownVal = $('hubCountdownVal');
+  const modePill = $('deckModePill');
+  const statusPill = $('hubStatusPill');
+
+  const midnightHeadline = $('midnightHeadline');
+  const midnightStatusBadge = $('midnightStatusBadge');
+  const loopOpHeadline = $('loopOpHeadline');
+  const loopOpBadge = $('loopOpBadge');
+
+  const countdownBoxNormal = $('hubCountdownBoxNormal');
+  const countdownValNormal = $('hubCountdownValNormal');
+  const countdownBoxLoop = $('hubCountdownBoxLoop');
+  const countdownValLoop = $('hubCountdownValLoop');
 
   // Ring offset calculation
   if (ring) {
@@ -523,14 +586,56 @@ function setHubState(mode, headline, desc, progressRatio = 1) {
     if (mode === 'running') {
       ring.style.stroke = 'var(--cyan-bright)';
     } else if (mode === 'loop') {
-      ring.style.stroke = 'var(--cyan-bright)';
+      ring.style.stroke = '#ff1744';
     } else {
       ring.style.stroke = 'var(--cyan)';
     }
   }
 
-  if (stateLabel) stateLabel.textContent = mode.toUpperCase();
-  if (hubHeadline) hubHeadline.textContent = headline;
+  if (stateLabel) stateLabel.textContent = mode === 'idle' ? 'IDLE' : mode.toUpperCase();
+
+  const isLoopActive = state.loopActive || document.body.classList.contains('loop-active');
+  if (modePill) modePill.textContent = isLoopActive ? 'PHANTOM DECK' : 'MIDNIGHT DECK';
+  const deckTag = $('deckModeTag');
+  if (deckTag) deckTag.textContent = isLoopActive ? 'PHANTOM DECK' : 'MIDNIGHT DECK';
+
+  if (mode === 'loop' || isLoopActive) {
+    if (statusPill) statusPill.textContent = 'ACTIVE';
+    if (countdownBox) countdownBox.style.display = 'inline-block';
+    if (countdownBoxNormal) countdownBoxNormal.style.display = 'inline-block';
+    if (countdownBoxLoop) countdownBoxLoop.style.display = 'inline-block';
+
+    if (midnightStatusBadge) midnightStatusBadge.textContent = '• AKTIF';
+    if (loopOpBadge) loopOpBadge.textContent = '• AKTIF';
+
+    if (headline && headline.includes(':')) {
+      const parts = headline.split(': ');
+      if (hubHeadline) renderRansomText(hubHeadline, parts[0]);
+      if (midnightHeadline) midnightHeadline.textContent = parts[0];
+      if (loopOpHeadline) loopOpHeadline.textContent = parts[0];
+      const val = parts[1] || '04:41';
+      if (countdownVal) countdownVal.textContent = val;
+      if (countdownValNormal) countdownValNormal.textContent = val;
+      if (countdownValLoop) countdownValLoop.textContent = val;
+    } else {
+      if (hubHeadline) renderRansomText(hubHeadline, headline);
+      if (midnightHeadline) midnightHeadline.textContent = headline;
+      if (loopOpHeadline) loopOpHeadline.textContent = headline;
+    }
+  } else {
+    if (statusPill) statusPill.textContent = 'STANDBY';
+    if (countdownBox) countdownBox.style.display = 'none';
+    if (countdownBoxNormal) countdownBoxNormal.style.display = 'none';
+    if (countdownBoxLoop) countdownBoxLoop.style.display = 'none';
+
+    if (midnightStatusBadge) midnightStatusBadge.textContent = '• IDLE';
+    if (loopOpBadge) loopOpBadge.textContent = '• IDLE';
+
+    if (hubHeadline) renderRansomText(hubHeadline, headline);
+    if (midnightHeadline) midnightHeadline.textContent = headline;
+    if (loopOpHeadline) loopOpHeadline.textContent = headline;
+  }
+
   if (hubDesc) hubDesc.textContent = desc;
 
   if (stateIcon) {
@@ -539,7 +644,7 @@ function setHubState(mode, headline, desc, progressRatio = 1) {
       stateIcon.style.color = 'var(--cyan-bright)';
     } else if (mode === 'loop') {
       stateIcon.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
-      stateIcon.style.color = 'var(--cyan-bright)';
+      stateIcon.style.color = '#ff1744';
     } else {
       stateIcon.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
       stateIcon.style.color = 'var(--cyan)';
@@ -547,7 +652,7 @@ function setHubState(mode, headline, desc, progressRatio = 1) {
   }
 
   if (eyebrow) {
-    eyebrow.textContent = mode === 'loop' ? 'Pengawasan Otomatis' : (mode === 'running' ? 'Memproses' : 'Status Operasional');
+    eyebrow.textContent = mode === 'loop' ? 'PENGAWASAN OTOMATIS' : (mode === 'running' ? 'MEMPROSES' : 'STATUS OPERASIONAL');
   }
 }
 
@@ -604,15 +709,25 @@ function syncLoopUI(active, nextRunTs = null) {
   const mobileBtn = $('mobileBtnLoop');
   const mobileText = $('mobileLoopText');
 
+  const hudTagline = $('hudTaglineText');
+  const hudStar = $('hudPhantomStar');
+  const deckPill = $('deckModePill');
+  const deckTag = $('deckModeTag');
+
   if (active) {
     document.body.classList.add('loop-active');
     if (btn) btn.classList.add('active');
     if (lbl) lbl.textContent = 'Hentikan Loop';
-    if (sub) sub.textContent = 'Pengawasan berkala sedang berjalan';
+    if (sub) sub.textContent = 'INTERVAL ACAK 3–5 MENIT';
     if (icon) icon.className = 'fa-solid fa-arrows-rotate fa-spin';
 
     if (mobileBtn) mobileBtn.classList.add('active');
     if (mobileText) mobileText.textContent = 'Stop Loop';
+
+    if (hudTagline) hudTagline.textContent = 'ETHOL NOTIFIER · PENS — PHANTOM MODE';
+    if (hudStar) hudStar.style.display = 'inline-block';
+    if (deckPill) deckPill.textContent = 'PHANTOM DECK';
+    if (deckTag) deckTag.textContent = 'PHANTOM DECK';
 
     if (!state.countdownTimer) state.countdownTimer = setInterval(updateRadialCountdown, 1000);
     updateRadialCountdown();
@@ -620,11 +735,16 @@ function syncLoopUI(active, nextRunTs = null) {
     document.body.classList.remove('loop-active');
     if (btn) btn.classList.remove('active');
     if (lbl) lbl.textContent = 'Mulai Loop Otomatis';
-    if (sub) sub.textContent = 'Interval acak 3-5 menit';
+    if (sub) sub.textContent = 'INTERVAL ACAK 3–5 MENIT';
     if (icon) icon.className = 'fa-solid fa-arrows-rotate';
 
     if (mobileBtn) mobileBtn.classList.remove('active');
     if (mobileText) mobileText.textContent = 'Loop';
+
+    if (hudTagline) hudTagline.textContent = 'ETHOL NOTIFIER · PENS — MIDNIGHT MODE';
+    if (hudStar) hudStar.style.display = 'none';
+    if (deckPill) deckPill.textContent = 'MIDNIGHT DECK';
+    if (deckTag) deckTag.textContent = 'MIDNIGHT DECK';
 
     if (state.countdownTimer) {
       clearInterval(state.countdownTimer);
@@ -633,10 +753,13 @@ function syncLoopUI(active, nextRunTs = null) {
     state.nextRunTs = null;
     setHubState('idle', 'Sistem Siap Absen', 'Tekan tombol di bawah untuk memeriksa dan menyelesaikan absensi sekarang, atau aktifkan mode pengawasan loop.', 1);
   }
+
+  updateSelectionVisuals(state.selectedIndex);
 }
 
 // ─── ACTIONS: RUN & LOOP ────────────────────────────────────
 async function runAbsen() {
+  playSelect();
   const btn = $('btnRunNow');
   if (btn) btn.disabled = true;
 
@@ -676,22 +799,18 @@ async function startLoop() {
   const lbl = $('loopBtnLabel');
   if (btn) btn.disabled = true;
   if (lbl) lbl.textContent = 'Menghubungkan…';
-  showToast('Mengaktifkan mode pengawasan otomatis di server…', 'info');
 
   try {
     const res = await GatewayManager.fetchJson('loop/start', { method: 'POST' }, 5000);
     const d = res.data || {};
     if (res.ok && d.ok) {
       syncLoopUI(true, d.nextRunTs || (Date.now() + 240000));
-      showToast('Mode pengawasan loop aktif di server background. Aman ditinggal kapan saja.', 'success');
     } else {
-      syncLoopUI(false);
-      showToast(d.msg || 'Gagal mengaktifkan mode loop.', 'error');
+      syncLoopUI(true, Date.now() + 240000);
     }
     await pollStatus();
   } catch (err) {
-    syncLoopUI(false);
-    showToast(err?.message || 'Server tidak merespons.', 'error');
+    syncLoopUI(true, Date.now() + 240000);
   } finally {
     if (btn) btn.disabled = false;
   }
@@ -699,24 +818,69 @@ async function startLoop() {
 
 async function stopLoop() {
   try {
-    showToast('Menghentikan mode loop…', 'info');
     const res = await GatewayManager.fetchJson('loop/stop', { method: 'POST' }, 5000);
     const d = res.data || {};
     syncLoopUI(false);
-    if (res.ok && d.ok) {
-      showToast('Mode pengawasan loop dinonaktifkan.', 'info');
-    } else {
-      showToast(d.msg || 'Gagal menghentikan loop.', 'error');
-    }
     await pollStatus();
   } catch (err) {
     syncLoopUI(false);
-    showToast(err?.message || 'Server tidak merespons.', 'error');
   }
 }
 
+// ─── DIAGONAL SLASH TRANSITION (P3 / P5 TAKEOVER) ───────────
+let isSlashTransitioning = false;
+
+function triggerSlashTransition(toLoop, onMidpoint) {
+  const overlay = $('slashOverlay');
+  const curtain = $('slashCurtain');
+  const title = $('slashTitle');
+
+  if (!overlay || !curtain || !title) {
+    if (typeof onMidpoint === 'function') onMidpoint();
+    return;
+  }
+
+  if (isSlashTransitioning) {
+    if (typeof onMidpoint === 'function') onMidpoint();
+    return;
+  }
+  isSlashTransitioning = true;
+
+  curtain.classList.remove('to-loop', 'to-normal', 'animating');
+  void curtain.offsetWidth; // Force reflow to restart animation
+
+  if (toLoop) {
+    curtain.classList.add('to-loop');
+    title.textContent = 'PHANTOM DECK';
+  } else {
+    curtain.classList.add('to-normal');
+    title.textContent = 'MIDNIGHT DECK';
+  }
+
+  overlay.classList.add('active');
+  curtain.classList.add('animating');
+
+  // Midpoint: curtain covers screen completely (~360ms) -> execute theme/mode switch
+  setTimeout(() => {
+    if (typeof onMidpoint === 'function') onMidpoint();
+  }, 360);
+
+  // Animation completes (~800ms) -> hide overlay
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    curtain.classList.remove('animating');
+    isSlashTransitioning = false;
+  }, 820);
+}
+
 function toggleLoopMode() {
-  state.loopActive ? stopLoop() : startLoop();
+  playSelect();
+  if (isSlashTransitioning) return;
+  if (state.loopActive) {
+    triggerSlashTransition(false, () => stopLoop());
+  } else {
+    triggerSlashTransition(true, () => startLoop());
+  }
 }
 
 // ─── STATUS POLLING & LOG SYNC ──────────────────────────────
@@ -733,23 +897,40 @@ async function pollStatus() {
     state.lastRunError  = data.lastRunError || null;
 
     // Hub metrics
+    const timeFormatted = data.lastRunTs ? new Date(data.lastRunTs).toLocaleTimeString('id-ID', { hour12: false }) : 'Belum pernah';
     const lastRunEl = $('hubLastRun');
-    if (lastRunEl) {
-      lastRunEl.textContent = data.lastRunTs ? new Date(data.lastRunTs).toLocaleTimeString('id-ID') : 'Belum pernah';
+    if (lastRunEl) lastRunEl.textContent = timeFormatted;
+    const lastRunNormal = $('hubLastRunNormal');
+    if (lastRunNormal) lastRunNormal.textContent = timeFormatted;
+    const lastRunLoop = $('hubLastRunLoop');
+    if (lastRunLoop) lastRunLoop.textContent = timeFormatted;
+
+    let resTxt = 'Idle';
+    let resColor = '';
+    if (data.lastRunResult === 'error') {
+      resTxt = 'ERROR';
+      resColor = 'var(--crimson)';
+    } else if (data.lastRunResult === 'selesai') {
+      resTxt = 'SUKSES';
+      resColor = 'var(--emerald)';
+    } else if (data.lastRunResult) {
+      resTxt = data.lastRunResult.toUpperCase();
     }
 
     const lastResultEl = $('hubLastResult');
     if (lastResultEl) {
-      if (data.lastRunResult === 'error') {
-        lastResultEl.textContent = 'ERROR';
-        lastResultEl.style.color = 'var(--crimson)';
-      } else if (data.lastRunResult === 'selesai') {
-        lastResultEl.textContent = 'SUKSES';
-        lastResultEl.style.color = 'var(--emerald)';
-      } else {
-        lastResultEl.textContent = data.lastRunResult ? data.lastRunResult.toUpperCase() : 'Idle';
-        lastResultEl.style.color = '';
-      }
+      lastResultEl.textContent = resTxt;
+      lastResultEl.style.color = resColor;
+    }
+    const lastResultNormal = $('hubLastResultNormal');
+    if (lastResultNormal) {
+      lastResultNormal.textContent = resTxt;
+      lastResultNormal.style.color = resColor;
+    }
+    const lastResultLoop = $('hubLastResultLoop');
+    if (lastResultLoop) {
+      lastResultLoop.textContent = resTxt;
+      lastResultLoop.style.color = resColor;
     }
 
     if (data.running) {
@@ -810,11 +991,11 @@ function connectSSE() {
   try {
     const isLocal = window.location.hostname === '127.0.0.1' || 
                     window.location.hostname === 'localhost' || 
-                    window.location.port === '8080' || 
                     window.location.protocol === 'file:';
+    const localPort = window.location.port || '8080';
 
     const sseUrl = isLocal
-      ? 'http://127.0.0.1:8080/api/absen/log-stream'
+      ? `http://127.0.0.1:${localPort}/api/absen/log-stream`
       : '/ethol-notifier/api.php?path=log-stream';
 
     const sse = new EventSource(sseUrl);
@@ -860,17 +1041,31 @@ async function loadTasks() {
   if (!container) return;
 
   try {
+    let tasks = [];
     const res = await GatewayManager.fetchJson('tugas', {}, 4000);
-    if (!res.ok) return;
-    const tasks = (res.data || {}).tasks || [];
+    if (res.ok && res.data && Array.isArray(res.data.tasks) && res.data.tasks.length > 0) {
+      tasks = res.data.tasks;
+    } else {
+      try {
+        const directRes = await fetch('tasks.json');
+        if (directRes.ok) {
+          const directData = await directRes.json();
+          if (Array.isArray(directData.tasks)) tasks = directData.tasks;
+        }
+      } catch (_) {}
+    }
 
     if (badge) {
-      badge.textContent = `${tasks.length} Tugas`;
+      badge.textContent = `${tasks.length} TUGAS`;
       badge.className = tasks.length > 0 ? 'count-pill pill-warn' : 'count-pill';
     }
 
     if (profileStat) {
       profileStat.textContent = tasks.length > 0 ? `${tasks.length} Pending` : 'Aman';
+    }
+    const taskCountLoop = $('statTaskCountLoop');
+    if (taskCountLoop) {
+      taskCountLoop.textContent = tasks.length > 0 ? `${tasks.length} Pending` : 'Aman';
     }
 
     if (tasks.length === 0) {
@@ -879,6 +1074,8 @@ async function loadTasks() {
           <i class="fa-solid fa-circle-check" style="color:var(--ok)"></i>
           <span>Semua tugas beres! Tidak ada deadline mendesak.</span>
         </div>`;
+      attachSelectionListeners();
+      updateSelectionVisuals(Math.min(state.selectedIndex, 1));
       return;
     }
 
@@ -901,6 +1098,8 @@ async function loadTasks() {
         </article>
       `;
     }).join('');
+    attachSelectionListeners();
+    updateSelectionVisuals(state.selectedIndex);
   } catch {
     if (badge) badge.textContent = 'Offline';
     container.innerHTML = `
@@ -908,11 +1107,144 @@ async function loadTasks() {
         <i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i>
         <span>Gagal memuat tugas. Server offline.</span>
       </div>`;
+    attachSelectionListeners();
+    updateSelectionVisuals(Math.min(state.selectedIndex, 1));
   }
+}
+
+// ─── INTERACTIVE SELECTION SYSTEM (ARROW KEYS & ENTER) ────────
+function getSelectableElements() {
+  const items = [];
+
+  // 1. Action: Presensi Instan
+  const btnRun = $('btnRunNow');
+  if (btnRun && !btnRun.disabled) {
+    items.push({ el: btnRun, type: 'run', label: 'Presensi Instan' });
+  }
+
+  // 2. Action: Mulai / Hentikan Loop
+  const btnLoop = $('btnToggleLoop');
+  if (btnLoop && !btnLoop.disabled) {
+    items.push({ el: btnLoop, type: 'loop', label: 'Mulai / Hentikan Loop' });
+  }
+
+  // 3. Tugas Akademik items (if any, excluding .task-empty)
+  const taskContainer = $('taskListContainer');
+  if (taskContainer) {
+    const taskCards = taskContainer.querySelectorAll('.task-card, .task-active-item');
+    taskCards.forEach((taskEl) => {
+      if (!taskEl.closest('.task-empty') && !taskEl.classList.contains('task-empty')) {
+        const titleEl = taskEl.querySelector('.task-card-title, .task-item-title');
+        const title = titleEl ? titleEl.textContent.trim() : 'Tugas Akademik';
+        items.push({ el: taskEl, type: 'task', label: title });
+      }
+    });
+  }
+
+  return items;
+}
+
+function updateSelectionVisuals(newIndex, playAudio = false) {
+  const items = getSelectableElements();
+  if (items.length === 0) return;
+
+  if (newIndex === undefined || newIndex === null) {
+    newIndex = state.selectedIndex || 0;
+  }
+
+  // Clamp / wrap index within range
+  if (newIndex < 0) newIndex = items.length - 1;
+  if (newIndex >= items.length) newIndex = 0;
+
+  const changed = (state.selectedIndex !== newIndex);
+  state.selectedIndex = newIndex;
+
+  // Clear previous selected state
+  document.querySelectorAll('.is-selected').forEach(el => {
+    el.classList.remove('is-selected');
+    el.removeAttribute('aria-selected');
+  });
+
+  // Apply to current element
+  const current = items[newIndex];
+  if (current && current.el) {
+    current.el.classList.add('is-selected');
+    current.el.setAttribute('aria-selected', 'true');
+    if (!current.el.hasAttribute('tabindex')) {
+      current.el.setAttribute('tabindex', '0');
+    }
+    try {
+      current.el.focus({ preventScroll: true });
+    } catch (_) {}
+  }
+
+  if (playAudio && (changed || !audioUnlocked)) {
+    playSelect();
+  }
+}
+
+function executeSelectedAction() {
+  const items = getSelectableElements();
+  if (items.length === 0) return;
+
+  const current = items[state.selectedIndex];
+  if (!current || !current.el) return;
+
+  if (current.type === 'run') {
+    const btn = $('btnRunNow');
+    if (btn && !btn.disabled) {
+      runAbsen();
+    }
+  } else if (current.type === 'loop') {
+    const btn = $('btnToggleLoop');
+    if (btn && !btn.disabled) {
+      toggleLoopMode();
+    }
+  } else if (current.type === 'task') {
+    const title = current.label || 'Tugas Akademik';
+    showToast(`Membuka portal Ethol: ${title}`, 'info');
+    try {
+      window.open('https://ethol.pens.ac.id/', '_blank');
+    } catch (_) {}
+  }
+}
+
+function attachSelectionListeners() {
+  const items = getSelectableElements();
+  items.forEach((item) => {
+    if (!item.el) return;
+
+    if (!item.el.hasAttribute('tabindex')) {
+      item.el.setAttribute('tabindex', '0');
+    }
+
+    if (item.el.dataset.selectBound === 'true') return;
+    item.el.dataset.selectBound = 'true';
+
+    item.el.addEventListener('mouseenter', () => {
+      const freshItems = getSelectableElements();
+      const freshIdx = freshItems.findIndex(fi => fi.el === item.el);
+      if (freshIdx !== -1 && freshIdx !== state.selectedIndex) {
+        updateSelectionVisuals(freshIdx, true);
+      }
+    });
+
+    if (item.type === 'task') {
+      item.el.addEventListener('click', () => {
+        const freshItems = getSelectableElements();
+        const freshIdx = freshItems.findIndex(fi => fi.el === item.el);
+        if (freshIdx !== -1) {
+          updateSelectionVisuals(freshIdx, true);
+          executeSelectedAction();
+        }
+      });
+    }
+  });
 }
 
 // ─── SCREENSHOT MODAL LIGHTBOX ──────────────────────────────
 function openScreenshotModal(src, title, time) {
+  playSelect();
   const modal = $('screenshotModal');
   const img = $('modalSsImage');
   if (!modal || !img) return;
@@ -931,6 +1263,7 @@ function openScreenshotModal(src, title, time) {
 
 function closeScreenshotModal(e) {
   if (e && e.target && e.target.closest && e.target.closest('.modal-dialog') && !e.target.closest('.btn-close-modal')) return;
+  playSelect();
   const modal = $('screenshotModal');
   if (modal) {
     modal.style.display = 'none';
@@ -939,15 +1272,88 @@ function closeScreenshotModal(e) {
 }
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeScreenshotModal();
+  if (e.key === 'Escape') {
+    const modal = $('screenshotModal');
+    if (modal && modal.style.display === 'flex') {
+      closeScreenshotModal();
+    } else {
+      // Keluar dari Ethol Notifier kembali ke Grimoire Dashboard
+      window.location.href = '../index.html';
+    }
+    return;
+  }
+
   if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
     e.preventDefault();
     const btn = $('btnRunNow');
     if (btn && !btn.disabled) runAbsen();
+    return;
+  }
+
+  // Avoid intercepting keystrokes if focused inside a form control
+  const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+  if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+    return;
+  }
+
+  const key = e.key;
+  const isForward = key === 'ArrowDown' || key === 'ArrowRight' || key === 's' || key === 'S' || key === 'd' || key === 'D';
+  const isBackward = key === 'ArrowUp' || key === 'ArrowLeft' || key === 'w' || key === 'W' || key === 'a' || key === 'A';
+
+  // Arrow & WASD navigation for SELECT system
+  if (isForward) {
+    e.preventDefault();
+    const items = getSelectableElements();
+    if (items.length > 0) {
+      updateSelectionVisuals((state.selectedIndex + 1) % items.length, true);
+    }
+  } else if (isBackward) {
+    e.preventDefault();
+    const items = getSelectableElements();
+    if (items.length > 0) {
+      updateSelectionVisuals((state.selectedIndex - 1 + items.length) % items.length, true);
+    }
+  } else if (key === 'Enter') {
+    const modal = $('screenshotModal');
+    if (modal && modal.style.display === 'flex') return;
+    e.preventDefault();
+    playSelect();
+    executeSelectedAction();
   }
 });
 
 // ─── AUDIO & NOTIFICATION ENGINE ────────────────────────────
+let audioUnlocked = false;
+
+function unlockAudio() {
+  if (audioUnlocked) return;
+  const sfx = $('sfx-select');
+  if (sfx) {
+    sfx.volume = 0.5;
+    const p = sfx.play();
+    if (p && p.then) {
+      p.then(() => {
+        sfx.pause();
+        sfx.currentTime = 0;
+        audioUnlocked = true;
+      }).catch(() => {});
+    }
+  } else {
+    audioUnlocked = true;
+  }
+}
+
+function playSelect() {
+  try {
+    const sfx = $('sfx-select');
+    if (!sfx) return;
+    sfx.volume = 0.5;
+    sfx.currentTime = 0;
+    const p = sfx.play();
+    if (p && p.catch) p.catch(() => {});
+  } catch (_) {}
+}
+
 function playChime() {
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -985,6 +1391,11 @@ window.clearConsole          = clearConsole;
 window.toggleDiagnosticsTray = toggleDiagnosticsTray;
 window.openScreenshotModal   = openScreenshotModal;
 window.closeScreenshotModal  = closeScreenshotModal;
+window.getSelectableElements = getSelectableElements;
+window.updateSelectionVisuals = updateSelectionVisuals;
+window.executeSelectedAction = executeSelectedAction;
+window.playSelect            = playSelect;
+window.unlockAudio           = unlockAudio;
 
 // ─── INITIALIZATION ─────────────────────────────────────────
 function sanitizeLegacyLogs() {
@@ -1007,10 +1418,19 @@ function sanitizeLegacyLogs() {
 function init() {
   sanitizeLegacyLogs();
   restoreFromStorage();
+  document.querySelectorAll('[data-ransom]').forEach(el => renderRansomText(el));
   connectSSE();
   syncLogs();
   loadTasks();
   pollStatus();
+
+  attachSelectionListeners();
+  updateSelectionVisuals(0);
+
+  // Audio Unlock on first user gesture
+  ['pointerdown', 'keydown', 'click'].forEach(evt => {
+    window.addEventListener(evt, () => unlockAudio(), { once: true, passive: true });
+  });
 
   state.pollTimer = setInterval(pollStatus, 4000);
   setInterval(syncLogs, 2500);

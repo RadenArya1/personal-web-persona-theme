@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <script src="../src/shared/zoom-lock.js"></script>
   <title>Grimoire Lab • Sandbox & Tester Hub</title>
   <meta name="description" content="Pusat isolasi website uji coba, purwarupa eksperimen, dan tester otonom Grimoire Ecosystem" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -16,6 +17,18 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
+    /* Custom Red Persona Cursor */
+    html, body, button, a, input, textarea, select {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M4 2 L22 18 L14 18 L18 28 L14 30 L10 20 L4 26 Z' fill='%23ff1744' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='miter'/%3E%3C/svg%3E"), auto !important;
+    }
+
+    html {
+      zoom: 0.8 !important;
+      -moz-transform: scale(0.8);
+      -moz-transform-origin: 0 0;
+      touch-action: pan-x pan-y;
+    }
+
     :root {
       --bg-core: #070d14;
       --bg-card: rgba(14, 25, 38, 0.75);
@@ -33,6 +46,8 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
+      zoom: 0.8 !important;
+      touch-action: pan-x pan-y;
       font-family: var(--font-sans);
       background-color: var(--bg-core);
       color: var(--text-main);

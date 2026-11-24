@@ -9,6 +9,7 @@ rotate-testsprite.ps1
 testsprite-runner.js
 mcp_config.json
 .agents/
+.claude/
 
 # Dependencies & Scratch Artifacts
 node_modules/

@@ -495,6 +495,34 @@ function sendServerHeartbeat() {
     req.end();
   } catch (_) {}
 }
+function parseMultipartBuffer(buffer, boundary) {
+  const boundaryBuf = Buffer.from('--' + boundary);
+  let startIdx = buffer.indexOf(boundaryBuf);
+  if (startIdx === -1) return null;
+  startIdx += boundaryBuf.length + 2;
+
+  const headerEndIdx = buffer.indexOf(Buffer.from('\r\n\r\n'), startIdx);
+  if (headerEndIdx === -1) return null;
+
+  const headers = buffer.slice(startIdx, headerEndIdx).toString('utf8');
+  const filenameMatch = headers.match(/filename="([^"]+)"/i);
+  const filename = filenameMatch ? filenameMatch[1] : 'uploaded_file.bin';
+
+  const dataStart = headerEndIdx + 4;
+  let nextBoundaryIdx = buffer.indexOf(boundaryBuf, dataStart);
+  if (nextBoundaryIdx === -1) return null;
+
+  let dataEnd = nextBoundaryIdx;
+  if (buffer[dataEnd - 2] === 13 && buffer[dataEnd - 1] === 10) {
+    dataEnd -= 2;
+  }
+
+  return {
+    filename,
+    data: buffer.slice(dataStart, dataEnd)
+  };
+}
+
 const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`);
   let url         = parsedUrl.pathname;
@@ -530,6 +558,130 @@ const server = http.createServer((req, res) => {
   if (url === '/favicon.ico') {
     res.writeHead(204);
     return res.end();
+  }
+
+  // ── API: Universal Converter Studio Bridge (YusufEren97 Architecture) ──
+  if (url === '/api/converter/status') {
+    const bridgeScript = path.join(__dirname, 'converter', 'backend', 'converter_bridge.py');
+    exec(`python "${bridgeScript}" status`, { timeout: 10000 }, (err, stdout) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      if (err) {
+        return res.end(JSON.stringify({ ok: false, error: err.message, status: 'offline' }));
+      }
+      try {
+        const data = JSON.parse(stdout);
+        return res.end(JSON.stringify({ ok: true, status: 'ready', ...data }));
+      } catch (e) {
+        return res.end(JSON.stringify({ ok: true, status: 'raw', output: stdout }));
+      }
+    });
+    return;
+  }
+
+  if (url === '/api/converter/upload' && req.method === 'POST') {
+    const contentType = req.headers['content-type'] || '';
+    const tempDir = path.join(__dirname, 'converter', 'backend', 'temp_uploads');
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+    let chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => {
+      const buffer = Buffer.concat(chunks);
+      try {
+        let filename = 'upload_file.bin';
+        let fileBuffer = buffer;
+
+        if (contentType.includes('application/json')) {
+          const body = JSON.parse(buffer.toString('utf8'));
+          filename = body.filename || filename;
+          fileBuffer = Buffer.from(body.content || '', 'base64');
+        } else if (contentType.includes('multipart/form-data')) {
+          const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
+          if (boundaryMatch) {
+            const boundary = boundaryMatch[1] || boundaryMatch[2];
+            const parsed = parseMultipartBuffer(buffer, boundary);
+            if (parsed && parsed.filename) {
+              filename = parsed.filename;
+              fileBuffer = parsed.data;
+            }
+          }
+        }
+
+        const cleanName = filename.replace(/[^a-zA-Z0-9._\-]/g, '_');
+        const savePath = path.join(tempDir, cleanName);
+        fs.writeFileSync(savePath, fileBuffer);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          success: true,
+          filename: cleanName,
+          original_name: filename,
+          path: savePath,
+          size: fileBuffer.length,
+          extension: path.extname(cleanName).toLowerCase()
+        }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ success: false, error: e.message }));
+      }
+    });
+    return;
+  }
+
+  if (url === '/api/converter/convert' && req.method === 'POST') {
+    let body = '';
+    req.on('data', d => body += d);
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const filePath = payload.file_path;
+        const targetFormat = (payload.target_format || '').toLowerCase();
+        const quality = payload.quality || 'high';
+
+        if (!filePath || !targetFormat) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ success: false, error: 'file_path dan target_format wajib diisi.' }));
+        }
+
+        const bridgeScript = path.join(__dirname, 'converter', 'backend', 'converter_bridge.py');
+        exec(`python "${bridgeScript}" "${filePath}" "${targetFormat}" "${quality}"`, { timeout: 120000 }, (err, stdout, stderr) => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          if (err && !stdout) {
+            return res.end(JSON.stringify({ success: false, error: stderr || err.message }));
+          }
+          try {
+            const resData = JSON.parse(stdout);
+            return res.end(JSON.stringify(resData));
+          } catch (e) {
+            return res.end(JSON.stringify({ success: false, error: stdout || stderr || 'Format respons tidak valid' }));
+          }
+        });
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ success: false, error: e.message }));
+      }
+    });
+    return;
+  }
+
+  if (url.startsWith('/api/converter/download')) {
+    const filenameParam = parsedUrl.searchParams.get('file') || url.replace(/^\/api\/converter\/download\/?/, '');
+    const cleanFilename = path.basename(filenameParam);
+    const filePath = path.join(__dirname, 'converter', 'backend', 'converted_files', cleanFilename);
+
+    if (fs.existsSync(filePath)) {
+      const stat = fs.statSync(filePath);
+      res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': stat.size,
+        'Content-Disposition': `attachment; filename="${cleanFilename}"`
+      });
+      fs.createReadStream(filePath).pipe(res);
+      return;
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ success: false, error: 'Berkas tidak ditemukan.' }));
+    }
   }
 
   // ── API: Health Check Mendalam (Self-Healing Watchdog) ──

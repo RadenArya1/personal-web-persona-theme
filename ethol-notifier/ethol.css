@@ -286,8 +286,8 @@ body, body.ethol-body {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border-subtle);
   border-radius: var(--radius-card);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: var(--shadow-sm);
   gap: var(--space-md);
 }
@@ -3370,3 +3370,1705 @@ body.loop-active .toast-item {
   transform: none;
 }
 
+/* ==========================================================================
+   ETHOL NOTIFIER — PERSONA DUAL-DECK REDESIGN SYSTEM (P3R MIDNIGHT × P5 PHANTOM)
+   ========================================================================== */
+
+/* ── 0. DESIGN TOKENS & FONTS ──────────────────────────────── */
+:root {
+  --font-p3-serif: 'Playfair Display', Georgia, serif;
+  --font-p5-ransom: 'Barlow Condensed', sans-serif;
+  --color-p3-midnight: #0d1b3e;
+  --color-p3-border: rgba(59, 130, 246, 0.35);
+  --color-p5-crimson: #e60012;
+  --color-p5-dark: #0a0103;
+}
+
+/* ── 1. DANCING BACKGROUND LAYERS (PERSONA 3 & PERSONA 5) ── */
+.dancing-bg-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dancing-bg-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.6s ease;
+}
+
+.bg-normal-p3 {
+  background-image: url('assets/bg-normal-p3-color-dark.png');
+  opacity: 1;
+}
+
+.bg-loop-p5 {
+  background-image: url('assets/bg-loop-p5-color-dark.png');
+  opacity: 0;
+}
+
+body.loop-active .bg-normal-p3 {
+  opacity: 0 !important;
+}
+
+body.loop-active .bg-loop-p5 {
+  opacity: 1 !important;
+}
+
+.dancing-bg-scrim {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(7, 10, 14, 0.6) 0%, rgba(7, 10, 14, 0.88) 100%);
+}
+
+/* ── 2. DIAGONAL SLASH TRANSITION OVERLAY ──────────────────── */
+.slash-transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  pointer-events: none;
+  overflow: hidden;
+  display: none;
+}
+
+.slash-transition-overlay.active {
+  display: block;
+}
+
+.slash-curtain {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  transform: rotate(-25deg) translateY(-100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slash-curtain.animating,
+.slash-curtain.slash-active {
+  animation: slashSweep 0.78s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+.slash-curtain.to-loop .slash-inner-skew {
+  background: #e60012 !important;
+}
+
+.slash-curtain.to-normal .slash-inner-skew {
+  background: #27408f !important;
+}
+
+@keyframes slashSweep {
+  0% {
+    transform: rotate(-25deg) translateY(-100%);
+  }
+  45%, 55% {
+    transform: rotate(-25deg) translateY(0%);
+  }
+  100% {
+    transform: rotate(-25deg) translateY(100%);
+  }
+}
+
+.slash-inner-skew {
+  width: 100%;
+  height: 100%;
+  background: var(--slash-bg, #e60012);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.9);
+  position: relative;
+}
+
+.slash-banner-content {
+  text-align: center;
+  color: #ffffff;
+  transform: rotate(25deg);
+}
+
+.slash-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 8px;
+}
+
+.slash-title {
+  font-family: var(--font-p5-ransom);
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  margin: 0;
+  color: #ffffff;
+  text-shadow: 4px 4px 0 #000000;
+}
+
+.slash-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 8px;
+}
+
+.slash-stripe {
+  width: 100%;
+  height: 6px;
+  background: #ffffff;
+  opacity: 0.85;
+}
+
+.slash-stripe-top {
+  margin-bottom: 20px;
+}
+
+.slash-stripe-bottom {
+  margin-top: 20px;
+}
+
+/* ── 3. ZERO-SCROLL DESKTOP VIEWPORT LOCK ─────────────────── */
+html, body.ethol-body {
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.deck-wrapper {
+  max-width: 1200px !important;
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0 auto;
+  padding: 8px 18px 6px 18px !important;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+/* ── 4. NAVBAR / HEADER (DUAL-MODE) ────────────────────────── */
+.deck-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0 6px 0;
+  border-bottom: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  flex-shrink: 0;
+}
+
+.deck-navbar,
+.deck-navbar * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.brand-normal-group {
+  display: flex;
+  align-items: center;
+}
+
+.brand-normal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(13, 27, 62, 0.95);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  border-radius: 9999px;
+  padding: 3px 14px;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.brand-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.deck-mode-tag {
+  background: rgba(59, 130, 246, 0.25);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #93c5fd;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.brand-loop-group {
+  display: none;
+}
+
+/* Loop Mode Header */
+body.loop-active .brand-normal-group {
+  display: none !important;
+}
+
+body.loop-active .brand-loop-group {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
+body.loop-active .brand-loop-badge {
+  background: #e60012;
+  border: 1.5px solid #ffffff;
+  color: #ffffff;
+  font-family: var(--font-p5-ransom);
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  padding: 2px 12px;
+  transform: skewX(-12deg);
+  box-shadow: 2px 2px 0 #000000;
+  display: inline-block;
+}
+
+body.loop-active .brand-loop-tag {
+  background: #000000;
+  border: 1px solid #e60012;
+  color: #ffffff;
+  font-family: var(--font-p5-ransom);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 2px;
+  transform: skewX(-12deg);
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.deck-navbar .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.deck-navbar .status-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.deck-navbar .chip-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.deck-navbar .clock-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.nav-btn-grimoire {
+  background: #ffffff;
+  color: #000000 !important;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.nav-btn-grimoire:hover {
+  transform: scale(1.04);
+  background: #f1f5f9;
+}
+
+/* ── 5. HERO BANNER: NORMAL (MIDNIGHT DECK) ────────────────── */
+.hero-midnight {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 115px;
+  gap: 16px;
+  align-items: center;
+  background: rgba(13, 27, 62, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: 10px;
+  padding: 14px 24px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+body.loop-active .hero-midnight {
+  display: none !important;
+}
+
+.hero-midnight-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-midnight-title {
+  font-family: var(--font-p3-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.hero-midnight-center {
+  background: rgba(7, 15, 38, 0.55);
+  border-radius: 6px;
+  padding: 10px 14px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.midnight-status-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.midnight-status-head h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.pill-idle-badge {
+  background: rgba(59, 130, 246, 0.25);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  border-radius: 9999px;
+  color: #93c5fd;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 7px;
+}
+
+.midnight-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+}
+
+.m-stat-lbl {
+  display: block;
+  font-size: 9.5px;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.m-stat strong {
+  font-size: 11.5px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.hero-midnight-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-moon-anchor {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-moon-body {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #faf0ca 45%, #e4cca2 100%);
+  box-shadow: 0 0 20px rgba(250, 240, 202, 0.5), 0 0 40px rgba(59, 130, 246, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-moon-body .moon-crater {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(180, 160, 120, 0.22);
+  box-shadow: inset 1px 1px 2px rgba(100, 80, 50, 0.3);
+}
+
+.hero-moon-body .c-1 {
+  width: 16px;
+  height: 16px;
+  top: 26%;
+  left: 42%;
+}
+
+.hero-moon-body .c-2 {
+  width: 11px;
+  height: 11px;
+  top: 60%;
+  left: 30%;
+}
+
+.hero-moon-body .c-3 {
+  width: 13px;
+  height: 13px;
+  top: 50%;
+  left: 62%;
+}
+
+.hero-moon-glow-bottom {
+  position: absolute;
+  bottom: -4px;
+  width: 70px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(59, 130, 246, 0.6) 0%, transparent 75%);
+  filter: blur(3px);
+}
+
+/* ── 6. HERO BANNER: LOOP (PHANTOM DECK) ───────────────────── */
+.hero-phantom {
+  display: none !important;
+}
+
+body.loop-active .hero-phantom {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 2px 2px 6px 2px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.phantom-ransom-headline {
+  display: flex;
+  align-items: center;
+  line-height: 0.9;
+}
+
+.ransom-row-loop-group,
+.ransom-row-absen-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ransom-word-loop,
+.ransom-row-absen {
+  font-family: var(--font-p5-ransom);
+  font-size: 58px;
+  font-weight: 900;
+  color: #e60012;
+  -webkit-text-stroke: 2px #ffffff;
+  text-shadow: 
+    -1.5px -1.5px 0 #ffffff,
+     1.5px -1.5px 0 #ffffff,
+    -1.5px  1.5px 0 #ffffff,
+     1.5px  1.5px 0 #ffffff;
+  transform: skewX(-8deg);
+  display: inline-block;
+  letter-spacing: -0.5px;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.ransom-word-aktif,
+.ransom-row-sekarang {
+  display: inline-block;
+  transform: skewX(-8deg);
+}
+
+.ransom-word-aktif span,
+.ransom-row-sekarang span {
+  background: #ffffff;
+  color: #000000;
+  font-family: var(--font-p5-ransom);
+  font-size: 58px;
+  font-weight: 900;
+  padding: 2px 14px 4px 14px;
+  display: inline-block;
+  letter-spacing: -0.5px;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.phantom-desc-box {
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  padding: 6px 12px;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 310px;
+  margin-left: 10px;
+}
+
+.phantom-desc-box p {
+  margin: 0;
+}
+
+.highlight-loop {
+  color: #e60012;
+  font-weight: 700;
+}
+
+.phantom-star {
+  color: #e60012;
+  font-size: 34px;
+  line-height: 1;
+  padding-bottom: 4px;
+}
+
+/* Loop Mode Background */
+body.loop-active {
+  background-color: #070002 !important;
+}
+
+/* ── 7. ADAPTIVE GRID LAYOUT ───────────────────────────────── */
+.deck-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "profile profile actions"
+    "timeline tasks logs"
+    "timestamp timestamp timestamp";
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: 2px;
+}
+
+.status-op-card {
+  display: none !important;
+}
+
+.profile-card {
+  grid-area: profile;
+}
+
+.actions-card {
+  grid-area: actions;
+}
+
+.timeline-card {
+  grid-area: timeline;
+}
+
+.tasks-card {
+  grid-area: tasks;
+}
+
+.logs-card {
+  grid-area: logs;
+}
+
+.timestamp-subline {
+  grid-area: timestamp;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 2px;
+  padding: 2px 0;
+}
+
+/* Loop Mode Grid Layout (2-Column Asymmetric) */
+body.loop-active .deck-grid-container {
+  display: grid !important;
+  grid-template-columns: 255px 1fr 1fr !important;
+  grid-template-rows: auto auto 1fr !important;
+  grid-template-areas:
+    "status   profile   profile"
+    "status   tasks     tasks"
+    "actions  timeline  logs" !important;
+  gap: 8px !important;
+}
+
+body.loop-active .status-op-card {
+  display: block !important;
+  grid-area: status;
+}
+
+body.loop-active .actions-card {
+  grid-area: actions;
+}
+
+body.loop-active .profile-card {
+  grid-area: profile;
+}
+
+body.loop-active .tasks-card {
+  grid-area: tasks;
+}
+
+body.loop-active .timeline-card {
+  grid-area: timeline;
+}
+
+body.loop-active .logs-card {
+  grid-area: logs;
+}
+
+body.loop-active .timestamp-subline {
+  display: none !important;
+}
+
+/* ── 8. CARD STYLES: NORMAL (MIDNIGHT BLUE) ─────────────────── */
+.card-deck {
+  clip-path: none !important;
+  background: rgba(13, 27, 62, 0.7);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  padding: 10px 14px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Profile Card (Normal) */
+.profile-card {
+  padding: 8px 14px;
+}
+
+.profile-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.profile-left-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-avatar-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1px 0;
+}
+
+.profile-email {
+  font-size: 11px;
+  color: #93c5fd;
+  display: block;
+}
+
+.profile-sso-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sso-chip-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 9999px;
+  padding: 1px 8px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.sso-chip-green .sso-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.btn-privacy-inline {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px;
+}
+
+.profile-right-portal {
+  text-align: right;
+}
+
+.portal-tag-lbl {
+  display: block;
+  font-size: 9.5px;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.portal-tag-url {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.profile-normal-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.p-stat-lbl {
+  display: block;
+  font-size: 9.5px;
+  color: #94a3b8;
+  margin-bottom: 1px;
+}
+
+.p-stat-val {
+  font-size: 11.5px;
+  color: #ffffff;
+}
+
+/* Action Controls (Normal) */
+.actions-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+  padding: 6px 10px;
+}
+
+.btn-hero-action {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  width: 100%;
+}
+
+.btn-hero-action:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.btn-action-presensi {
+  background: #ffffff;
+  color: #000000;
+}
+
+.btn-action-presensi .btn-action-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  display: block;
+  color: #000000;
+}
+
+.btn-action-presensi .btn-action-sub {
+  font-size: 9px;
+  font-weight: 600;
+  color: #555555;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-top: 1px;
+}
+
+.btn-action-loop {
+  background: #1e3a8a;
+  border: 1px solid #3b82f6;
+  color: #ffffff;
+}
+
+.btn-action-loop .btn-action-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  display: block;
+  color: #ffffff;
+}
+
+.btn-action-loop .btn-action-sub {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.5px;
+  display: block;
+  margin-top: 1px;
+}
+
+/* Section Card Heads */
+.card-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.head-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.head-icon {
+  font-size: 11px;
+  color: #93c5fd;
+}
+
+.head-title-text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #93c5fd;
+  text-transform: uppercase;
+}
+
+/* Tasks Card (Normal) */
+.task-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 2px 0;
+}
+
+.task-item-meta {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
+.task-item-dosen {
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.task-item-note {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.task-item-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.task-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.badge-h1 {
+  background: #fef08a;
+  color: #854d0e;
+}
+
+.badge-unfinish {
+  background: #1e3a8a;
+  color: #ffffff;
+}
+
+/* Dynamic Loaded Task Card Overrides */
+.tasks-card .task-card {
+  clip-path: none !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.tasks-card .task-card-title {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin: 0 0 2px 0 !important;
+}
+body.loop-active .tasks-card .task-card-title {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+}
+.tasks-card .task-card-course {
+  font-size: 10.5px !important;
+  color: #94a3b8 !important;
+  display: block !important;
+  margin-bottom: 1px !important;
+}
+body.loop-active .tasks-card .task-card-course {
+  color: #333333 !important;
+}
+.tasks-card .task-card-deadline {
+  font-size: 10.5px !important;
+  color: #94a3b8 !important;
+}
+body.loop-active .tasks-card .task-card-deadline {
+  color: #333333 !important;
+}
+.tasks-card .task-card-footer {
+  border: none !important;
+  padding: 0 !important;
+  margin-top: 3px !important;
+  font-size: 10.5px !important;
+  color: #94a3b8 !important;
+  display: flex !important;
+  gap: 8px !important;
+}
+body.loop-active .tasks-card .task-card-footer {
+  color: #555555 !important;
+}
+.tasks-card .task-badge-h {
+  background: #fef08a !important;
+  color: #854d0e !important;
+  font-weight: 800 !important;
+  font-size: 9px !important;
+  padding: 2px 6px !important;
+  border-radius: 3px !important;
+}
+body.loop-active .tasks-card .task-badge-h {
+  background: #e60012 !important;
+  color: #ffffff !important;
+  border-radius: 2px !important;
+}
+
+/* Timeline Card (Normal) */
+.timeline-stat-lead {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 4px 0 6px 0;
+}
+
+.lead-number {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.lead-text {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.timeline-feed-text p {
+  margin: 1px 0;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: #94a3b8;
+}
+
+/* Diagnostic Logs Card (Normal) */
+.log-head-flex {
+  cursor: pointer;
+}
+
+.head-icon-play {
+  font-size: 9px;
+  color: #93c5fd;
+}
+
+.log-stream-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.log-stream-status .stream-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.log-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.btn-filter-tag {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-filter-tag.active {
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.filter-dot {
+  color: #475569;
+}
+
+.logs-card {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.logs-card .card-section-head {
+  flex-shrink: 0 !important;
+}
+
+.logs-card .log-card-body {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+.logs-card .log-filter-row {
+  flex-shrink: 0 !important;
+  margin-bottom: 4px !important;
+}
+
+.logs-card .console-screen-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  position: relative !important;
+  border-top: none !important;
+}
+
+.logs-card .console-screen {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #94a3b8;
+  line-height: 1.4;
+  background: rgba(3, 7, 18, 0.75);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+.console-last-check {
+  display: block;
+  font-size: 9.5px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+/* ── 9. CARD STYLES: LOOP MODE (PHANTOM RED & CONTRAST WHITE) ── */
+
+/* Status Operasional Card (Column 1) */
+body.loop-active .status-op-card {
+  background: #0a0103 !important;
+  border: 1px solid #cc0010 !important;
+  border-radius: 2px !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%) !important;
+  padding: 10px 14px !important;
+  box-shadow: 0 0 16px rgba(230, 0, 18, 0.2) !important;
+}
+
+body.loop-active .op-eyebrow {
+  font-family: var(--font-p5-ransom);
+  font-size: 10px;
+  font-weight: 800;
+  color: #e60012;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+body.loop-active .op-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.loop-active .op-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+body.loop-active .op-badge-idle {
+  background: #1a0003;
+  border: 1px solid #e60012;
+  color: #ffffff;
+  border-radius: 9999px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+}
+
+body.loop-active .op-stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  border-top: 1px solid rgba(230, 0, 18, 0.3);
+  padding-top: 8px;
+}
+
+body.loop-active .op-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+body.loop-active .op-stat-lbl {
+  color: #a3a3a3;
+}
+
+body.loop-active .op-stat-val {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Action Controls (Loop Mode - White Card matching Status Operasional) */
+body.loop-active .actions-card {
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 2px !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%) !important;
+  padding: 12px 14px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.loop-active .btn-action-presensi {
+  background: #e60012 !important;
+  color: #ffffff !important;
+  transform: skewX(-8deg) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 8px 12px !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, background 0.15s ease !important;
+  margin: 0 4px !important;
+}
+
+body.loop-active .btn-action-presensi:hover {
+  background: #ff1a2b !important;
+  transform: skewX(-8deg) scale(1.02) !important;
+}
+
+body.loop-active .btn-action-presensi .btn-action-title {
+  color: #ffffff !important;
+  font-family: var(--font-p5-ransom) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+body.loop-active .btn-action-presensi .btn-action-sub {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-size: 8.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  margin-top: 2px !important;
+  text-transform: uppercase !important;
+}
+
+body.loop-active .btn-action-loop {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: none !important;
+  transform: skewX(-8deg) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 8px 12px !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, background 0.15s ease !important;
+  margin: 0 4px !important;
+}
+
+body.loop-active .btn-action-loop:hover {
+  background: #1a1a1a !important;
+  transform: skewX(-8deg) scale(1.02) !important;
+}
+
+body.loop-active .btn-action-loop .btn-action-title {
+  color: #ffffff !important;
+  font-family: var(--font-p5-ransom) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+}
+
+body.loop-active .btn-action-loop .btn-action-sub {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 8.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  margin-top: 2px !important;
+  text-transform: uppercase !important;
+}
+
+/* Profile Card (Loop Mode - White Card) */
+body.loop-active .profile-card {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: none !important;
+  border-radius: 2px !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%) !important;
+  padding: 10px 18px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.loop-active .profile-avatar-badge {
+  background: #e60012 !important;
+  color: #ffffff !important;
+  border-radius: 2px !important;
+  font-family: var(--font-p5-ransom) !important;
+  font-weight: 900 !important;
+  font-size: 16px !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+body.loop-active .profile-name {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+}
+
+body.loop-active .profile-email {
+  color: #555555 !important;
+  font-size: 11px !important;
+}
+
+body.loop-active .portal-tag-lbl {
+  color: #777777 !important;
+  font-size: 9.5px !important;
+}
+
+body.loop-active .portal-tag-url {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+}
+
+body.loop-active .profile-normal-stats {
+  display: none !important;
+}
+
+/* Tasks Card (Loop Mode - White Card) */
+body.loop-active .tasks-card {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: none !important;
+  border-radius: 2px !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%) !important;
+  padding: 10px 18px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.loop-active .tasks-card .head-icon {
+  display: none;
+}
+
+body.loop-active .tasks-card .head-title-text {
+  color: #e60012 !important;
+  font-family: var(--font-p5-ransom) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px;
+}
+
+body.loop-active .task-item-title {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+}
+
+body.loop-active .task-item-meta {
+  color: #333333 !important;
+  font-size: 10.5px !important;
+}
+
+body.loop-active .task-item-dosen {
+  color: #555555 !important;
+  font-size: 10.5px !important;
+}
+
+body.loop-active .task-item-note {
+  display: none;
+}
+
+body.loop-active .badge-h1 {
+  background: #e60012 !important;
+  color: #ffffff !important;
+  border-radius: 2px !important;
+}
+
+body.loop-active .badge-unfinish {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-radius: 2px !important;
+}
+
+/* Timeline Card (Loop Mode - White Card) */
+body.loop-active .timeline-card {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: none !important;
+  border-radius: 2px !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%) !important;
+  padding: 10px 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.loop-active .timeline-card .head-icon {
+  color: #e60012 !important;
+}
+
+body.loop-active .timeline-card .head-title-text {
+  color: #e60012 !important;
+  font-family: var(--font-p5-ransom) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px;
+}
+
+body.loop-active .lead-number {
+  color: #000000 !important;
+}
+
+body.loop-active .lead-text {
+  color: #000000 !important;
+}
+
+/* Hapus teks status kosong di semua mode */
+#timelineEmptyTitle,
+.timeline-sub-p {
+  display: none !important;
+}
+
+body.loop-active .timeline-feed-text p {
+  color: #444444 !important;
+}
+
+/* Sederhanakan entri presensi di semua mode: hanya centang + nama mata kuliah */
+#timelineContainer .timeline-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 4px 6px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin-top: 4px !important;
+}
+
+#timelineContainer .timeline-card .timeline-rail {
+  display: flex !important;
+  align-items: center !important;
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#timelineContainer .timeline-card .timeline-node {
+  width: 18px !important;
+  height: 18px !important;
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 10px !important;
+}
+
+#timelineContainer .timeline-card .timeline-content {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  flex: 1 !important;
+}
+
+#timelineContainer .timeline-card .timeline-title {
+  display: none !important;
+}
+
+#timelineContainer .timeline-card .timeline-title-compact {
+  display: block !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+}
+
+/* Di mode loop berlatar putih, warna teks hitam */
+body.loop-active #timelineContainer .timeline-card .timeline-title-compact {
+  color: #000000 !important;
+}
+
+#timelineContainer .timeline-card .timeline-meta-row,
+#timelineContainer .timeline-card .timeline-details,
+#timelineContainer .timeline-card .timeline-proof-card {
+  display: none !important;
+}
+
+/* Diagnostic Logs Card (Loop Mode - Black Card with Red Border, mentok mengisi card) */
+body.loop-active .logs-card {
+  background: #0a0103 !important;
+  border: 1px solid #cc0010 !important;
+  border-radius: 2px !important;
+  padding: 8px 12px 8px 12px !important;
+  box-shadow: 0 0 16px rgba(230, 0, 18, 0.2) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+body.loop-active .logs-card .card-section-head {
+  flex-shrink: 0 !important;
+}
+
+body.loop-active .logs-card .log-card-body {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+body.loop-active .logs-card .log-filter-row {
+  flex-shrink: 0 !important;
+  margin-bottom: 4px !important;
+}
+
+body.loop-active .logs-card .console-screen-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  position: relative !important;
+  border: none !important;
+}
+
+body.loop-active .head-icon-play {
+  color: #e60012 !important;
+}
+
+body.loop-active .logs-card .head-title-text {
+  color: #e60012 !important;
+  font-family: var(--font-p5-ransom) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px;
+}
+
+body.loop-active .log-stream-status {
+  color: #e60012 !important;
+}
+
+body.loop-active .log-stream-status .stream-dot {
+  background: #e60012 !important;
+}
+
+body.loop-active .logs-card .console-screen {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  color: #ff99aa !important;
+  background: #050102 !important;
+  border: 1px solid rgba(230, 0, 18, 0.25) !important;
+  border-radius: 2px !important;
+  padding: 8px 10px !important;
+  overflow-y: auto !important;
+}
+
+/* ── 10. FOOTER HUD BAR ────────────────────────────────────── */
+.persona-hud-bottom {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 4px 2px 0 2px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  margin-top: 2px !important;
+  flex-shrink: 0;
+}
+
+.hud-bottom-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.loop-active .persona-hud-bottom {
+  color: rgba(255, 255, 255, 0.75) !important;
+  border-top-color: rgba(230, 0, 18, 0.35) !important;
+}
+
+body.loop-active .hud-phantom-star {
+  display: inline-block !important;
+  color: #e60012 !important;
+  margin-right: 4px;
+}
+
+/* ── 11. INTERACTIVE SELECTION SYSTEM (ARROW KEYS & ENTER) ── */
+.btn-hero-action {
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.18s ease, filter 0.15s ease !important;
+}
+
+.tasks-card .task-active-item,
+.tasks-card .task-card {
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.18s ease, border-color 0.18s ease !important;
+}
+
+/* Normal Mode Selection */
+.btn-hero-action.is-selected {
+  outline: none !important;
+  box-shadow: 0 0 0 2.5px #38bdf8, 0 0 16px rgba(56, 189, 248, 0.75) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  filter: brightness(1.08) !important;
+  z-index: 10;
+}
+
+.tasks-card .task-active-item.is-selected,
+.tasks-card .task-card.is-selected {
+  outline: none !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px #38bdf8, 0 0 16px rgba(56, 189, 248, 0.55) !important;
+  transform: translateY(-2px) scale(1.01) !important;
+  z-index: 5;
+}
+
+/* Loop Mode Selection (Persona 5 bold red/white style) */
+body.loop-active .btn-hero-action.is-selected {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4.5px #e60012, 0 0 22px rgba(230, 0, 18, 0.85) !important;
+  transform: skewX(-8deg) scale(1.03) !important;
+  z-index: 10;
+}
+
+body.loop-active .tasks-card .task-active-item.is-selected,
+body.loop-active .tasks-card .task-card.is-selected {
+  outline: none !important;
+  border-color: #e60012 !important;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3.5px #e60012, 0 0 18px rgba(230, 0, 18, 0.7) !important;
+  transform: skewX(-2deg) scale(1.01) !important;
+  z-index: 5;
+}

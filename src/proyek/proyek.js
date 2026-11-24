@@ -4,9 +4,20 @@
    ========================================================= */
 
 (function initProyekWeb() {
-  const STORAGE_KEY = 'grimoire_web_projects_v16';
+  const STORAGE_KEY = 'grimoire_web_projects_v17';
 
   const DEFAULT_PROJECTS = [
+    {
+      id: 'proj_converter_studio',
+      title: 'Universal Converter Studio',
+      icon: 'fa-right-left',
+      status: 'active',
+      statusLabel: 'Aktif',
+      desc: 'Studio konversi berkas universal (PDF, Word DOCX, PowerPoint PPTX, dan Gambar) dengan Persona 3 Midnight UI, dial radial dinamis, navigasi shortcut keyboard, dan 100% pemrosesan aman di browser.',
+      target: 'converter/ (Web Mandiri)',
+      url: 'converter/index.html',
+      tags: ['PDF.js', 'jsPDF', 'Mammoth', 'docx.js', 'Radial Dial', 'Persona 3', 'Client-Side']
+    },
     {
       id: 'proj_ethol_sync',
       title: 'Ethol Academic Notifier',
@@ -88,7 +99,7 @@
 
   function getProjects() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('grimoire_web_projects_v13') || localStorage.getItem('grimoire_web_projects_v9') || localStorage.getItem('grimoire_web_projects_v8');
+      const stored = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('grimoire_web_projects_v16') || localStorage.getItem('grimoire_web_projects_v13') || localStorage.getItem('grimoire_web_projects_v9') || localStorage.getItem('grimoire_web_projects_v8');
       if (stored) {
         let parsed = JSON.parse(stored);
         
