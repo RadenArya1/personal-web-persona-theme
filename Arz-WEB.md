@@ -9,6 +9,7 @@
 Dokumen tunggal ini menggabungkan seluruh panduan arsitektur, konvensi organisasi folder fitur, protokol audit kebersihan proyek, serta spesifikasi teknis terkini dari ekosistem **Arz-WEB**, yang mencakup pilar aplikasi web aktif yang telah dibangun dan terpasang di server produksi:
 1. **Personal Web & Operations Dashboard** (`index.html`) — Portal sentral web personal berestetika interaktif Persona 3 Reload / Cyber-Grimoire dengan navigasi multi-menu video otentik (Home, About, Projects, Skills, Contact), rasio skala presisi zoom-lock 80%, peluncur katalog proyek terintegrasi, pemantau telemetri sistem, konsol notifikasi live, dan jam presisi tinggi.
 2. **Ethol Academic Notifier** (`ethol-notifier/`) — Modul automasi akademik cerdas berbasis headless Puppeteer & background daemon di CasaOS: Executive Presensi Deck terpadu dengan cincin countdown radial SVG, linimasa kehadiran interaktif real-time, lightbox bukti layar, tray konsol diagnostik server collapsible, pemantau tenggat tugas kuliah, serta metamorfosis tema Velvet Crimson Arcane dinamis saat mode loop.
+3. **Universal Converter Studio** (`converter/`) — Studio konversi dokumen dan media universal berbasis 100% in-browser client-side execution (PDF.js, Mammoth.js, docx.js, jsPDF, Tesseract.js OCR, html2canvas, JSZip) berestetika Persona 3 Midnight Radial Dial dengan dukungan dual-layout: panggung dial melingkar 360° interaktif di desktop dan reflow daftar vertikal kartu sentuh 48px ergonomis di mobile.
 *(Catatan: Purwarupa uji coba dan tester otonom QA TestSprite diisolasi secara eksklusif di `lab/` dan `testsprite_tests/` untuk lingkungan localhost, dilindungi dari deployment publik).*
 
 ---
@@ -371,6 +372,16 @@ Modul automasi akademik mandiri (**Ethol Academic Notifier**) beroperasi sebagai
 - **Simulator Langkah & Modal Lightbox**: Memungkinkan pengujian simulasi alur absensi langkah demi langkah, inspeksi gambar bukti layar penuh, dan kanvas ambient dynamic background.
 - **Scraper Tugas Akademik Mandiri (`ethol-task-scraper.js`)**: Engine mandiri yang bertugas mengumpulkan penugasan kuliah dari portal ETHOL PENS dengan batas filter jendela tenggat -7 hari s/d +7 hari, terisolasi dan sinkron dengan `tasks.json`.
 - **Integrasi Katalog Proyek**: Shortcut ubin `Visual Absen Inspector` didaftarkan secara resmi di Grimoire Dashboard (`src/proyek/proyek.js`) dengan ikon unik `fa-binoculars`, status `active`, dan bump storage key katalog ke `v13`.
+
+### 11. Universal Converter Studio (`converter/`) & Android-Fit Mobile Ergonomics
+- **Arsitektur Konversi In-Browser 100% Client-Side**: Mengintegrasikan engine client-side mandiri (PDF.js, jsPDF, Mammoth.js, docx.js, html2canvas, JSZip, Tesseract.js OCR) yang menjamin privasi berkas pengguna tanpa pengiriman data ke server eksternal, dilengkapi fallback hybrid Python bridge jika backend lokal tersedia.
+- **Radial Dial P3 Midnight (Desktop ≥ 769px)**: Mengadopsi visual Persona 3 Midnight dengan cincin orbit dinamis berputar (`.dial-orbit-ring`, `.dial-orbit-pulse`), dropzone lingkaran berdiameter 270px di pusat stage 520px, dan penempatan matematis polar node target 360° menggunakan sudut CSS `--node-angle`.
+- **Transformasi Responsif Android-Fit (Mobile ≤ 768px via `css/mobile.css`)**:
+  - Reflow single-column: Dial melingkar secara cerdas bertransformasi menjadi susunan daftar tombol vertikal (`order: 2`) dengan dropzone persegi sudut melengkung 16px (`order: 1`).
+  - Target sentuh standar Google Material Design 3 (≥ 48px × 48px) pada seluruh node mode konversi dan tombol aksi (`#btnConvertActive`, `#btnResetFile`).
+  - Scrim pelindung kontras teks di atas visual background Makoto Yuki.
+  - Skala proporsional bulan purnama P3 (64px–76px) di pojok kanan atas layar tanpa menutupi panggung aksi.
+  - Zero horizontal overflow (`max-width: 100vw; overflow-x: hidden;`) pada viewport 360px, 390px, dan 430px.
 
 ---
 

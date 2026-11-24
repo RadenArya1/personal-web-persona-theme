@@ -1,0 +1,21 @@
+# Dependensi Python untuk Universal Converter Studio (Backend Bridge)
+# Diadopsi dari referensi YusufEren97/universal-file-converter
+pillow
+python-docx
+lxml
+
+# === NUMPY & DOKUMEN (Wajib pin numpy<2.0 untuk pdf2docx) ===
+numpy<2.0
+pdf2docx
+docx2pdf
+python-pptx
+PyMuPDF
+reportlab
+
+# === Ekstraksi Arsip & Format Khusus ===
+py7zr
+pillow-heif; sys_platform != "win32" or python_version < "3.13"
+cairosvg
+
+# === Windows COM Automation (Word / PowerPoint) ===
+comtypes; sys_platform == "win32"

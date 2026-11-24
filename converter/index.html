@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id" data-zoom="1.0">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="target-zoom" content="1.0" />
+  <script src="../src/shared/zoom-lock.js"></script>
+  <meta name="theme-color" content="#000814" />
+  <meta name="description" content="Universal Document & Media Converter Studio — Konversi berkas PDF, Word (.docx), PowerPoint (.pptx), dan seluruh format Gambar (JPG, PNG, WEBP, SVG, BMP, GIF) 100% aman dan privat di browser Anda." />
+  <title>Universal Converter Studio — Word, PDF, PPT & Images</title>
+
+  <!-- Google Fonts: Marcellus (Serif) & Inter (UI/Body) & JetBrains Mono (Tech/Metrics) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Marcellus&display=swap" rel="stylesheet" />
+
+  <!-- FontAwesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/mobile.css?v=20261124_p3_mobile_v1" />
+
+  <!-- Client-Side Libraries (100% In-Browser Execution) -->
+  <!-- 1. PDF.js (Mozilla) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- 2. jsPDF (Parall-X) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- 2b. html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';"></script>
+  <!-- 3. JSZip -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- 4. Mammoth.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <!-- 5. docx.js -->
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js" onerror="this.onerror=null;this.src='https://unpkg.com/docx@8.5.0/build/index.umd.js';"></script>
+  <!-- 6. Tesseract.js -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js';"></script>
+</head>
+<body class="p3-midnight-body">
+
+  <!-- Background Layer with Scrim & Glow Overlay -->
+  <div class="bg-backdrop" aria-hidden="true">
+    <div class="bg-image"></div>
+    <div class="bg-scrim"></div>
+    <div class="p3-moon-container">
+      <div class="p3-moon"></div>
+      <div class="p3-moon-glow"></div>
+    </div>
+  </div>
+
+  <!-- App Header / Top Navigation Bar -->
+  <header class="app-header">
+    <div class="header-nav">
+      <div class="header-left-group">
+        <a href="../index.html" class="btn-back" id="btnBackGrimoire">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Dashboard</span>
+        </a>
+      </div>
+
+      <!-- HUD Top-Right Legend & Clock -->
+      <div class="hud-top-bar" id="hudBottom">
+        <div class="hud-shortcuts">
+          <span><span class="key">↑↓</span><span class="hud-label">SELECT</span></span>
+          <span><span class="key">ENTER</span><span class="hud-label">CONFIRM</span></span>
+          <span><span class="key">ESC</span><span class="hud-label">BACK</span></span>
+        </div>
+        <div class="hud-clock" id="hudClock">--.--.-- · WIB</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Studio Workbench: Centered Radial Dial as Main Stage -->
+  <main class="studio-workbench">
+    <div class="studio-layout-centered">
+      
+      <!-- Central Radial Dial Stage -->
+      <section class="studio-dial-col">
+        <div class="radial-dial-stage">
+          
+          <!-- Orbit Decorative Rings -->
+          <div class="dial-orbit-ring" aria-hidden="true"></div>
+          <div class="dial-orbit-pulse" aria-hidden="true"></div>
+
+          <!-- Dynamic Radial Target Nodes (Muncul Setelah Berkas Dimasukkan) -->
+          <div class="dial-nodes-container" id="dialNodesContainer" role="group" aria-label="Pilihan Target Konversi"></div>
+
+          <!-- Central Round Dropzone -->
+          <div class="dropzone-container radial-dropzone" id="dropzone" aria-label="Area Unggah Berkas">
+            <input type="file" id="fileInput" style="display: none;" accept=".pdf,.docx,.doc,.pptx,.ppt,image/*" />
+            <div class="dropzone-content">
+              
+              <!-- 1. State Kosong (Tahap 1: Belum Ada Berkas) -->
+              <div class="dropzone-empty-state" id="dropzoneEmptyState">
+                <div class="dropzone-icon-wrap">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <div class="dropzone-instruction">
+                  Seret & lepas berkas ke sini, atau klik untuk memilih
+                </div>
+                <div class="dropzone-hint">
+                  Mendukung PDF, Word (.docx), PowerPoint (.pptx), serta seluruh tipe gambar.
+                </div>
+              </div>
+
+              <!-- 2. State Terisi (Tahap 2: Berkas Masuk, Siap Dipilih Targetnya) -->
+              <div class="dropzone-loaded-state hidden" id="dropzoneLoadedState">
+                <div class="loaded-file-icon-wrap" id="loadedFileIconWrap">
+                  <i class="fa-solid fa-file"></i>
+                </div>
+                <div class="loaded-file-name" id="loadedFileName" title="Nama Berkas">berkas.pdf</div>
+                <div class="loaded-file-meta" id="loadedFileMeta">0 KB · Siap Dikonversi</div>
+                
+                <div class="loaded-file-actions">
+                  <button type="button" class="btn-convert-active" id="btnConvertActive">
+                    <i class="fa-solid fa-bolt"></i> <span>Konversi</span>
+                  </button>
+                  <button type="button" class="btn-reset-file" id="btnResetFile" title="Ganti Berkas">
+                    <i class="fa-solid fa-rotate-left"></i> <span>Ganti</span>
+                  </button>
+                </div>
+
+                <!-- Progress Bar Konversi -->
+                <div class="loaded-file-progress-wrap hidden" id="loadedFileProgressWrap">
+                  <div class="progress-track">
+                    <div class="progress-fill" id="loadedProgressFill" style="width: 0%;"></div>
+                  </div>
+                  <div class="progress-status-text" id="loadedProgressText">Memulai konversi...</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Hidden Queue Card (Fallback untuk kompatibilitas multi-file jika dibutuhkan) -->
+    <section class="queue-card hidden" id="queueCard" aria-label="Antrean Berkas">
+      <div class="queue-header">
+        <div class="queue-title">
+          <i class="fa-solid fa-list-check" style="color: var(--cyan-glow);"></i>
+          <span>Daftar Antrean Konversi</span>
+          <span class="queue-badge" id="queueCount">0 Berkas</span>
+        </div>
+        <div class="queue-actions">
+          <button type="button" class="btn-clear" id="btnClear">
+            <i class="fa-solid fa-trash-can"></i> Bersihkan
+          </button>
+          <button type="button" class="btn-convert-all" id="btnConvertAll">
+            <i class="fa-solid fa-bolt"></i> Konversi Semua
+          </button>
+        </div>
+      </div>
+      <div class="image-merge-option" id="imageMergeWrap" style="display: none;">
+        <input type="checkbox" id="chkMergeImages" checked />
+        <label for="chkMergeImages">
+          <strong>Gabungkan semua gambar menjadi 1 dokumen PDF</strong>
+        </label>
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </section>
+  </main>
+
+  <!-- Live Toast Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- App Footer: Format yang Didukung (Non-Selectable) -->
+  <footer class="app-footer">
+    <div class="supported-formats-footer">
+      <span class="supported-formats-label">Format yang Didukung:</span>
+      <div class="supported-tags">
+        <span class="supported-tag">PDF</span>
+        <span class="supported-tag">DOCX</span>
+        <span class="supported-tag">PPTX</span>
+        <span class="supported-tag">JPG / JPEG</span>
+        <span class="supported-tag">PNG</span>
+        <span class="supported-tag">WEBP</span>
+        <span class="supported-tag">SVG</span>
+        <span class="supported-tag">BMP</span>
+        <span class="supported-tag">GIF</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App Logic (Module) -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

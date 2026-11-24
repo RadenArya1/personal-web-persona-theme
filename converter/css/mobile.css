@@ -1,0 +1,481 @@
+/* mobile.css — Perbaikan UI HP Universal Converter Studio (Radial Dial P3 Midnight)
+   HANYA aktif di bawah 768px. Desktop (>=769px) TIDAK DIUBAH.
+   Dimuat SETELAH style.css utama.
+   Tanggal: 24 Nov 2026
+*/
+
+/* Pencegahan default horizontal overflow */
+html, body {
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  /* =========================================================
+     1. ROOT & VIEWPORT (Android Dynamic Viewport Fit)
+     ========================================================= */
+  html, body {
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  body.p3-midnight-body {
+    height: auto !important;
+    min-height: 100dvh;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex;
+    flex-direction: column;
+    padding: max(10px, env(safe-area-inset-top, 10px)) 14px max(16px, env(safe-area-inset-bottom, 16px)) 14px !important;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+  }
+
+  /* Scrim Ekstra di HP: Melindungi kontras teks di atas wajah Makoto */
+  body.p3-midnight-body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 10, 28, 0.58);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  body.p3-midnight-body > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .bg-backdrop {
+    z-index: 0 !important;
+  }
+
+  /* Bulan Purnama P3: Skala proporsional agar tidak menutupi UI */
+  .p3-moon-container {
+    width: 76px !important;
+    height: 76px !important;
+    top: max(8px, env(safe-area-inset-top, 8px)) !important;
+    right: 12px !important;
+    opacity: 0.65 !important;
+    flex: none;
+  }
+
+  /* =========================================================
+     2. APP HEADER & TOP NAVIGATION BAR
+     ========================================================= */
+  .app-header {
+    position: static !important;
+    width: 100% !important;
+    margin-bottom: 12px;
+  }
+
+  .header-nav {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  /* Tombol Kembali ke Grimoire Dashboard */
+  .btn-back {
+    min-height: 44px !important;
+    font-size: 13.5px !important;
+    padding: 8px 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px;
+    border-radius: 9999px !important;
+    touch-action: manipulation;
+  }
+
+  /* HUD Top Bar & Jam WIB */
+  .hud-top-bar {
+    position: static !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 6px 14px !important;
+    gap: 8px !important;
+    background: rgba(13, 27, 76, 0.85) !important;
+    border-radius: 9999px !important;
+    border: 1px solid var(--glass-border) !important;
+  }
+
+  /* Sembunyikan shortcut keyboard desktop (↑↓, ENTER, ESC) di layar HP */
+  .hud-shortcuts {
+    display: none !important;
+  }
+
+  .hud-clock {
+    font-size: 12px !important;
+    color: var(--cyan-glow) !important;
+    font-family: var(--font-mono) !important;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+
+  /* =========================================================
+     3. STUDIO WORKBENCH (Single Column Centered Layout)
+     ========================================================= */
+  .studio-workbench {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    padding: 0 !important;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  .studio-layout-centered {
+    width: 100% !important;
+    max-width: 440px !important;
+    margin: 0 auto;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box;
+  }
+
+  .studio-dial-col {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    box-sizing: border-box;
+  }
+
+  /* =========================================================
+     4. INTI TRANSFORMASI DIAL:
+        Lingkaran Radial -> Flex Vertikal + Dropzone Persegi
+     ========================================================= */
+  .radial-dial-stage {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    margin: 0 auto !important;
+    transform: none !important;
+    box-sizing: border-box;
+  }
+
+  /* Matikan lingkaran orbit dekoratif */
+  .dial-orbit-ring,
+  .dial-orbit-pulse {
+    display: none !important;
+  }
+
+  /* DROPZONE: Dari bundar 270px -> Persegi panjang sudut melengkung 16px */
+  .dropzone-container.radial-dropzone {
+    order: 1 !important;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 180px !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 22px 16px !important;
+    box-sizing: border-box;
+    touch-action: manipulation;
+    background: radial-gradient(circle, rgba(20, 48, 126, 0.88) 0%, rgba(13, 27, 76, 0.96) 85%) !important;
+    border: 2px dashed rgba(0, 229, 255, 0.5) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(0, 229, 255, 0.12) !important;
+  }
+
+  .dropzone-container.radial-dropzone:hover,
+  .dropzone-container.radial-dropzone.drag-over {
+    transform: none !important;
+    border-color: var(--cyan-glow) !important;
+  }
+
+  .dropzone-content {
+    width: 100% !important;
+  }
+
+  .dropzone-empty-state {
+    max-width: 100% !important;
+    gap: 8px;
+  }
+
+  .dropzone-icon-wrap {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 20px !important;
+    margin-bottom: 4px;
+  }
+
+  .dropzone-instruction {
+    font-size: 14.5px !important;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-primary);
+  }
+
+  .dropzone-hint {
+    font-size: 12px !important;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    overflow: visible !important;
+  }
+
+  /* Dropzone Loaded State */
+  .dropzone-loaded-state {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .loaded-file-icon-wrap {
+    width: 58px !important;
+    height: 58px !important;
+    font-size: 26px !important;
+  }
+
+  .loaded-file-name {
+    font-size: 15px !important;
+    max-width: 100% !important;
+    word-break: break-all;
+    line-height: 1.3;
+  }
+
+  .loaded-file-meta {
+    font-size: 12.5px !important;
+    color: var(--text-secondary);
+  }
+
+  .loaded-file-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn-convert-active,
+  .btn-reset-file {
+    min-height: 48px !important;
+    padding: 10px 18px !important;
+    font-size: 14.5px !important;
+    font-weight: 600;
+    border-radius: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px;
+    touch-action: manipulation;
+    box-sizing: border-box;
+  }
+
+  .btn-convert-active {
+    flex: 1 1 140px;
+    min-width: 140px;
+  }
+
+  .btn-reset-file {
+    flex: 0 1 auto;
+    min-width: 90px;
+  }
+
+  /* =========================================================
+     5. 5 NODE MODE TARGET:
+        Dari posisi absolute melingkar -> Tombol Daftar Vertikal
+     ========================================================= */
+  .dial-nodes-container {
+    order: 2 !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    pointer-events: auto !important;
+    margin-top: 4px;
+    box-sizing: border-box;
+  }
+
+  .preset-chip.dial-node {
+    order: 2 !important;
+    position: static !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 12px 18px !important;
+    box-sizing: border-box;
+    font-size: 14.5px !important;
+    text-align: left;
+    animation: none !important;
+    margin: 0 !important;
+    background: rgba(13, 27, 76, 0.94) !important;
+    border: 1.5px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+    touch-action: manipulation;
+  }
+
+  .preset-chip.dial-node .node-icon {
+    font-size: 17px !important;
+    width: 24px;
+    text-align: center;
+    color: var(--cyan-glow);
+    flex-shrink: 0;
+  }
+
+  .preset-chip.dial-node .node-label {
+    flex: 1;
+    font-weight: 600;
+    font-size: 14px !important;
+    color: var(--text-primary);
+  }
+
+  .preset-chip.dial-node:hover,
+  .preset-chip.dial-node.active {
+    transform: none !important;
+  }
+
+  /* Node AKTIF: Warna #1e3a8a, border cyan glow, kontras tinggi */
+  .preset-chip.dial-node.active {
+    background: linear-gradient(135deg, #1e3a8a 0%, #0d1b4c 100%) !important;
+    border-color: var(--cyan-glow) !important;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.45), inset 0 0 10px rgba(0, 229, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
+
+  .preset-chip.dial-node.active .node-icon {
+    color: #ffffff !important;
+    text-shadow: 0 0 8px var(--cyan-glow);
+  }
+
+  .preset-chip.dial-node.active .node-label {
+    color: #ffffff !important;
+  }
+
+  /* =========================================================
+     6. APP FOOTER & FORMAT CHIPS
+     ========================================================= */
+  .app-footer {
+    position: static !important;
+    width: 100% !important;
+    padding: 16px 0 12px !important;
+    margin-top: auto;
+    box-sizing: border-box;
+  }
+
+  .supported-formats-footer {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    box-sizing: border-box;
+    text-align: center;
+    background: rgba(13, 27, 76, 0.8) !important;
+    border: 1px solid var(--glass-border) !important;
+  }
+
+  .supported-formats-label {
+    font-size: 11.5px !important;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .supported-tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .supported-tag {
+    font-size: 11px !important;
+    min-height: 32px !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(20, 48, 126, 0.6) !important;
+    border: 1px solid rgba(100, 160, 255, 0.25) !important;
+    color: var(--text-secondary);
+  }
+}
+
+/* =========================================================
+   7. EXTRA SMALL SCREENS (<= 480px)
+   ========================================================= */
+@media (max-width: 480px) {
+  body.p3-midnight-body {
+    padding: max(8px, env(safe-area-inset-top, 8px)) 10px max(14px, env(safe-area-inset-bottom, 14px)) 10px !important;
+  }
+
+  .p3-moon-container {
+    width: 64px !important;
+    height: 64px !important;
+    top: 8px !important;
+    right: 8px !important;
+  }
+
+  .dropzone-container.radial-dropzone {
+    min-height: 165px !important;
+    padding: 18px 12px !important;
+  }
+
+  .dropzone-instruction {
+    font-size: 14px !important;
+  }
+
+  .dropzone-hint {
+    font-size: 11.5px !important;
+  }
+
+  .preset-chip.dial-node {
+    min-height: 48px !important;
+    padding: 10px 14px !important;
+    font-size: 13.5px !important;
+  }
+
+  .supported-tag {
+    font-size: 10.5px !important;
+    padding: 5px 10px !important;
+    min-height: 30px !important;
+  }
+}

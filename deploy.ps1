@@ -1,4 +1,4 @@
-﻿<#
+<#
   =============================================================
   ARZ-WEB: NGINX HOME SERVER DEPLOYMENT SCRIPT
   Target: \\100.73.128.8\Data\AppData\nginx\config\www
@@ -9,6 +9,7 @@ param(
     [switch]$RunTest,
     [switch]$SkipTest,
     [switch]$PushGit,
+    [switch]$PersonaOnly,
     [string]$CommitMessage = ""
 )
 
@@ -200,19 +201,23 @@ if ($PushGit) {
             git commit -m $msg
             Write-Host "[GIT] Commit berhasil dibuat: $msg" -ForegroundColor Green
         }
-        Write-Host "[GIT] Melakukan git push origin main..." -ForegroundColor Cyan
-        git push origin main
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "[GIT] ✅ Berhasil disinkronkan ke GitHub (origin/Arz-WEB)!" -ForegroundColor Green
+        if (!$PersonaOnly) {
+            Write-Host "[GIT] Melakukan git push origin main..." -ForegroundColor Cyan
+            git push origin main
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "[GIT] ✅ Berhasil disinkronkan ke GitHub (origin/Arz-WEB)!" -ForegroundColor Green
+            } else {
+                Write-Host "[GIT-WARN] Gagal git push origin." -ForegroundColor Yellow
+            }
         } else {
-            Write-Host "[GIT-WARN] Gagal git push origin." -ForegroundColor Yellow
+            Write-Host "[GIT] Mode -PersonaOnly aktif: Melewati push ke origin (Arz-WEB)." -ForegroundColor Yellow
         }
 
         # Periksa remote persona (personal-web-persona-theme) jika ada
         $remotes = git remote
         if ($remotes -contains "persona") {
-            Write-Host "[GIT] Melakukan git push persona main..." -ForegroundColor Cyan
-            git push persona main
+            Write-Host "[GIT] Melakukan git push persona HEAD:main..." -ForegroundColor Cyan
+            git push persona HEAD:main
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "[GIT] ✅ Berhasil disinkronkan ke GitHub Persona Theme (persona/main)!" -ForegroundColor Green
             } else {
@@ -230,8 +235,9 @@ Write-Host "=========================================" -ForegroundColor Green
 Write-Host "   DEPLOYMENT SUKSES! ($fileCount Berkas Terpasang)" -ForegroundColor Green
 Write-Host "=========================================" -ForegroundColor Green
 Write-Host "Akses website & backend Anda di:"
-Write-Host "  - Grimoire Dashboard : https://dashboard.raidenarya.my.id" -ForegroundColor Cyan
+Write-Host "  - Portfolio Persona  : https://dashboard.raidenarya.my.id" -ForegroundColor Cyan
 Write-Host "  - Ethol Notifier     : https://dashboard.raidenarya.my.id/ethol-notifier/" -ForegroundColor Cyan
+Write-Host "  - Universal Converter: https://dashboard.raidenarya.my.id/converter/" -ForegroundColor Cyan
 Write-Host "  - Portainer CasaOS   : http://100.73.128.8:9000" -ForegroundColor Cyan
 Write-Host ""
 
