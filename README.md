@@ -44,9 +44,10 @@ flowchart TD
 
 ## 🌟 Pilar Aplikasi Utama (Core Micro-Apps)
 
-### 1. 🔮 Grimoire Dashboard (`index.html`)
-*Portal Pusat Kendali & Peluncur Layanan Mandiri*
+### 1. 🔮 Personal Web & Operations Dashboard (`index.html`)
+*Portal Pusat Kendali, Portofolio & Peluncur Layanan Mandiri*
 - **Fitur Utama:**
+  - **Persona 3 Reload Aesthetic & Video Replica:** Antarmuka visual interaktif bertema Persona dengan navigasi menu video dinamis (Home, About, Projects, Skills, Contact) dan zoom-lock 80%.
   - **Dynamic Project Catalog:** Katalog ubin proyek interaktif dengan pelacakan status operasional dua fase (*Aktif* & *Perbaikan*).
   - **Live Service Health Monitor:** Pelacak ketersediaan dan latensi node layanan secara real-time.
   - **Interactive Widget Suite:** Jam astronomis, audio ambience switcher, dan quick console.

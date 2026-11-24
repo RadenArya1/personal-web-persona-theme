@@ -104,6 +104,18 @@ if (!(Test-Path $etholTarget)) {
 }
 robocopy (Join-Path $sourceDir "ethol-notifier") $etholTarget /E /XD screenshots .puppeteer_profile ethol-notifier Error_Absen /XF ethol-config.json attended_keys.json /R:2 /W:1 /NP /NFL /NDL
 
+# Menyinkronkan folder aset persona web (assets/, css/, js/) dan modul converter ke Nginx
+foreach ($dirName in @("assets", "css", "js", "converter")) {
+    $dirSrc = Join-Path $sourceDir $dirName
+    if (Test-Path $dirSrc) {
+        $dirDst = Join-Path $targetDir $dirName
+        if (!(Test-Path $dirDst)) {
+            New-Item -ItemType Directory -Path $dirDst -Force | Out-Null
+        }
+        robocopy $dirSrc $dirDst /E /R:2 /W:1 /NP /NFL /NDL
+    }
+}
+
 # Sinkronkan tangkapan layar otentik ke Nginx WWW agar HP dapat memuat gambar asli
 $nginxScreenshots = Join-Path $etholTarget "screenshots"
 if (!(Test-Path $nginxScreenshots)) {

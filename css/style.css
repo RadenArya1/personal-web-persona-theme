@@ -26,13 +26,18 @@ html {
   zoom: 0.8 !important;
   -moz-transform: scale(0.8);
   -moz-transform-origin: 0 0;
-  touch-action: pan-x pan-y;
+  touch-action: manipulation;
+  overscroll-behavior-y: contain;
   background: var(--black);
   height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 body {
   height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   zoom: 0.8 !important;
   background: var(--black);
   color: var(--white);
@@ -40,7 +45,10 @@ body {
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   user-select: none;
-  touch-action: pan-x pan-y;
+  touch-action: manipulation;
+  overscroll-behavior-y: contain;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .display {
