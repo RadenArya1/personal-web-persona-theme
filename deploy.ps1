@@ -1,4 +1,4 @@
-<#
+﻿<#
   =============================================================
   ARZ-WEB: NGINX HOME SERVER DEPLOYMENT SCRIPT
   Target: \\100.73.128.8\Data\AppData\nginx\config\www
@@ -203,9 +203,21 @@ if ($PushGit) {
         Write-Host "[GIT] Melakukan git push origin main..." -ForegroundColor Cyan
         git push origin main
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "[GIT] ✅ Berhasil disinkronkan ke GitHub!" -ForegroundColor Green
+            Write-Host "[GIT] ✅ Berhasil disinkronkan ke GitHub (origin/Arz-WEB)!" -ForegroundColor Green
         } else {
-            Write-Host "[GIT-WARN] Gagal git push (pastikan remote repo dan autentikasi telah siap)." -ForegroundColor Yellow
+            Write-Host "[GIT-WARN] Gagal git push origin." -ForegroundColor Yellow
+        }
+
+        # Periksa remote persona (personal-web-persona-theme) jika ada
+        $remotes = git remote
+        if ($remotes -contains "persona") {
+            Write-Host "[GIT] Melakukan git push persona main..." -ForegroundColor Cyan
+            git push persona main
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "[GIT] ✅ Berhasil disinkronkan ke GitHub Persona Theme (persona/main)!" -ForegroundColor Green
+            } else {
+                Write-Host "[GIT-WARN] Gagal git push persona." -ForegroundColor Yellow
+            }
         }
     }
 }
