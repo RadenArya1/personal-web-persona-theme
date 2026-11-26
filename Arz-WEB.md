@@ -65,7 +65,8 @@ Arz-WEB/
 │
 ├── ethol-notifier/                      # FOLDER MANDIRI: Ethol Academic Notifier (Auto Absen & Tugas)
 │   ├── index.html                       # Entry Point Mandiri Ethol Notifier
-│   ├── ethol.css                        # Styling dashboard glassmorphism, KPI cards, filter log, status badges
+│   ├── ethol.css                        # Styling dashboard Persona Dual-Deck (Midnight P3 × Phantom P5)
+│   ├── mobile.css                       # Stylesheet responsif Android-Fit (≤ 768px & ≤ 480px) untuk kedua mode deck
 │   ├── ethol.js                         # Controller antarmuka (Self-Healing Gateway, failover, status & widget tugas)
 │   ├── ethol-agent.js                   # Automasi headless Puppeteer (SSO CAS PENS, auto presensi & scraper tugas)
 │   ├── ethol-task-scraper.js            # Scraper mandiri penugasan perkuliahan portal ETHOL PENS

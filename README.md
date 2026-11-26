@@ -65,7 +65,7 @@ flowchart TD
   - **Collapsible Server Diagnostics:** Konsol teknis terintegrasi di tray drawer bawah yang dapat dilipat agar fokus antarmuka tetap bersih.
   - **Concurrent Task Scraper & Modular CLI Engine:** Sinkronisasi penugasan perkuliahan paralel portal ETHOL PENS (jendela waktu -7 hari s/d +30 hari & filter status selesai ketat) dengan dukungan flag pemindaian modular (`--tasks-only`, `--absen-only`) yang tersimpan otomatis di `tasks.json`.
   - **Multi-Node Fallback Gateway & PWA Ready:** Gerbang proxy failover otomatis dan dukungan Progressive Web App untuk perangkat mobile.
-  - **Mobile-First & Anti-Scroll Trap Engine:** Antarmuka responsif ramah jempol (100dvh & safe area insets), tata letak grid adaptif seimbang, dan eliminasi total scroll trap untuk pengalaman browsing smartphone yang mulus.
+  - **Mobile-First & Anti-Scroll Trap Engine (`ethol-notifier/mobile.css`):** Antarmuka responsif ramah jempol (100dvh, safe area insets, reflow 1 kolom di ≤ 768px untuk Midnight & Phantom Deck, tombol ≥ 52px, filter log ≥ 44px, zero horizontal overflow) untuk pengalaman browsing smartphone yang mulus.
 
 ### 3. 🔄 Universal Converter Studio (`converter/`)
 *Studio Konversi Dokumen & Media Client-Side 100% In-Browser*
